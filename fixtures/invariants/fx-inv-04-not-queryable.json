@@ -1,0 +1,40 @@
+{
+  "vector": "버킷 잠금 조회 토큰 없음 + 일부 노드 미확인 — 없다고 단정하면 안 된다",
+  "expect": {
+    "verdict": "자세 결함",
+    "I1": "FAIL",
+    "I2": "UNKNOWN",
+    "I3": "FAIL",
+    "I4": "UNKNOWN",
+    "I5": "PASS"
+  },
+  "probe": {
+    "bsl_credential": {
+      "in_cluster": true,
+      "can_delete": true
+    },
+    "bucket_lock": {
+      "queryable": false
+    },
+    "repo_password": {
+      "sha256": "0938e9d99fe8eac6b7f0c2f7626a4e364c89f3be450ce9e6d81184f0c120b8b8"
+    },
+    "remote_desktop": {
+      "checked": [
+        "ilwon",
+        "louise"
+      ],
+      "listening": [],
+      "unknown": [
+        "solomon",
+        "david"
+      ]
+    },
+    "backup_freshness": {
+      "name": "hourly-critical-20260922120019",
+      "age_hours": 3.9,
+      "max_age_hours": 24
+    }
+  },
+  "id": "fx-inv-04-not-queryable"
+}

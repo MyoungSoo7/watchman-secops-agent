@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파수꾼 · 6노드 관제 맵</title>
+<!--
+  Watchman(파수꾼) S1 관제 뷰 프로토 — 6노드 클러스터 맵 + /state 폴링 + 알림 색 오버레이.
+  단일 파일, 외부 의존 없음. 열면 바로 동작(기본 샘플 모드 → 녹화 안정).
+  읽기 전용: 이 페이지엔 쓰기 컨트롤이 없다(FR-15 계약을 UI 로도 지킨다).
+
+  ⚠ 정직성 메모: /state 계약에는 run 을 클러스터 노드에 매핑하는 필드가 없다.
+     6노드 맵은 "클러스터 토폴로지" 이고, 알림을 노드에 얹는 배치는
+     namespace 해시 기반 '시각화용'이다(어느 노드에서 떴는지의 사실이 아님).
+     노드 색은 전체 경보 수준을 공유한다. 실제 세부는 아래 'run 패널'이 원본이다.
+-->
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#0b0f14;color:#c9d1d9;
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Segoe UI,sans-serif}
+header{padding:14px 20px;border-bottom:1px solid #1c2430;display:flex;flex-wrap:wrap;
+  gap:6px 18px;align-items:baseline}
+h1{font-size:17px;margin:0;font-weight:700}
+h1 .lock{font-size:11px;color:#7ee787;font-weight:500;margin-left:8px}
+.meta{color:#8b949e;font-size:12px}
+.meta b{color:#c9d1d9;font-weight:600}
+.spacer{flex:1}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.03em}
+.badge.live{background:#12331f;color:#3fb950;border:1px solid #24623a}
+.badge.sample{background:#332a12;color:#d29922;border:1px solid #6b551c}
+button{font:inherit;font-size:12px;background:#161b22;color:#c9d1d9;border:1px solid #30363d;
+  border-radius:6px;padding:4px 10px;cursor:pointer}
+button:hover{border-color:#4b5563}
+button.on{background:#1f6feb22;border-color:#1f6feb;color:#79c0ff}
+.wrap{padding:16px 20px;max-width:1180px;margin:0 auto}
+.banner{display:none;margin:0 0 14px;padding:9px 12px;border-radius:8px;font-size:12.5px;
+  background:#3a1d1d;border:1px solid #6b2b2b;color:#ffb4b4}
+.banner.show{display:block}
+.cluster-alert{margin:2px 0 16px;padding:10px 14px;border-radius:10px;font-weight:700;
+  display:flex;align-items:center;gap:10px;border:1px solid #30363d;background:#0f141b}
+.cluster-alert .dot{width:14px;height:14px;border-radius:50%}
+.grid-lbl{color:#8b949e;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  margin:14px 0 8px}
+.nodes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:720px){.nodes{grid-template-columns:1fr}}
+.node{position:relative;border:1px solid #212b38;border-radius:12px;padding:12px 14px;
+  background:#0f141b;min-height:104px;transition:border-color .3s,box-shadow .3s}
+.node .nh{display:flex;align-items:center;gap:8px}
+.node .ndot{width:11px;height:11px;border-radius:50%;flex:none}
+.node .nname{font-weight:700;font-size:15px}
+.node .nrole{color:#8b949e;font-size:11px;margin-left:auto}
+.node .over{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;min-height:22px}
+.pin{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;border:1px solid transparent;
+  white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.node.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(248,81,73,.0)}50%{box-shadow:0 0 0 4px rgba(248,81,73,.28)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+.chip{padding:4px 10px;border-radius:20px;background:#12181f;border:1px solid #263041;font-size:12px}
+.chip b{font-weight:700}
+section h2{font-size:13px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;
+  margin:24px 0 8px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #1a222d;vertical-align:top}
+th{color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.rid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b949e;white-space:nowrap}
+.state{font-weight:700;white-space:nowrap}
+.inj{color:#a371f7;font-weight:700;margin-left:4px}
+.cls{color:#adbac7;max-width:440px}
+.num{font-variant-numeric:tabular-nums;color:#8b949e;white-space:nowrap;text-align:right}
+.empty{color:#8b949e;padding:26px 0;text-align:center}
+.ns{color:#6e7681;font-size:11px}
+footer{color:#6e7681;font-size:11px;padding:16px 20px 30px;border-top:1px solid #1c2430;margin-top:20px}
+footer .note{color:#8b6d3a}
+</style></head>
+<body>
+<header>
+  <h1>🛡️ 파수꾼 6노드 관제 <span class="lock" id="lock">read-only</span></h1>
+  <span class="spacer"></span>
+  <span class="badge sample" id="modeBadge">SAMPLE</span>
+  <button id="btnLive" title="라이브 /state 폴링">라이브</button>
+  <button id="btnSample" class="on" title="번들 샘플로 폴링(녹화용)">샘플</button>
+  <span class="meta" id="poll">–</span>
+</header>
+
+<div class="wrap">
+  <div class="banner" id="banner"></div>
+
+  <div class="cluster-alert" id="clusterAlert">
+    <span class="dot" id="caDot" style="background:#3fb950"></span>
+    <span id="caText">클러스터 경보 수준: 로딩…</span>
+    <span class="spacer"></span>
+    <span class="meta">모델 <b id="model">–</b> · <span id="llm">–</span> · 갱신 <b id="now">–</b></span>
+  </div>
+
+  <div class="grid-lbl">control-plane</div>
+  <div class="nodes" id="cpNodes"></div>
+  <div class="grid-lbl">worker</div>
+  <div class="nodes" id="wkNodes"></div>
+
+  <div class="chips" id="chips"></div>
+
+  <section>
+    <h2>최근 run</h2>
+    <table>
+      <thead><tr>
+        <th>run_id</th><th>상태</th><th>알림 / ns</th><th>분류</th>
+        <th>신뢰</th><th>LLM</th><th>토큰</th><th>소요</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="8" class="empty">불러오는 중…</td></tr></tbody>
+    </table>
+  </section>
+</div>
+
+<footer>
+  읽기 전용 관제 뷰 · <code>/state</code> 계약(FR-15)만 소비 · 쓰기 컨트롤 없음.
+  <br><span class="note">⚠ 맵의 알림→노드 배치는 시각화용 해시다 — <code>/state</code> 에 노드 필드가 없어
+  "어느 노드에서 떴는지"의 사실이 아니다. 노드 색은 전체 경보 수준을 공유한다. 실제 세부는 위 run 표가 원본.</span>
+</footer>
+
+<script>
+// ---- 설정 ----------------------------------------------------------------
+var LIVE_URL = 'https://security.lemuel.co.kr/state';   // 공개 read-only 엔드포인트
+var SAMPLE_URL = 'sample-state.json';                    // 같은 폴더의 번들 샘플
+var POLL_MS = 5000;
+var NODES = [
+  {name:'lemuel',  role:'control-plane'},
+  {name:'ilwon',   role:'control-plane'},
+  {name:'solomon', role:'control-plane'},
+  {name:'david',   role:'worker'},
+  {name:'louise',  role:'worker'},
+  {name:'isagal',  role:'worker'}
+];
+
+// 상태 → 색·마크·심각도 우선순위 (기존 대시보드 팔레트와 일치)
+var STYLE = {
+  '실패':      {c:'#f85149', m:'🔴', sev:6},
+  '복구 필요': {c:'#db6d28', m:'🟠', sev:5},
+  '부분 결과': {c:'#d29922', m:'🟡', sev:4},
+  '실행 중':   {c:'#58a6ff', m:'🔵', sev:3},
+  '완료':      {c:'#3fb950', m:'🟢', sev:1},
+  '대기':      {c:'#8b949e', m:'⚪', sev:0},
+  '취소':      {c:'#6e7681', m:'⚫', sev:0}
+};
+function stStyle(s){return STYLE[s]||{c:'#8b949e',m:'·',sev:0};}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+
+// namespace 를 6노드 중 하나로 안정 배치(시각화용 해시 — 사실 매핑 아님)
+function hashNode(str){var h=0,s=String(str||'');for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}
+  return h % NODES.length;}
+
+var mode = 'sample';          // 'sample' | 'live'
+var timer = null;
+
+function setMode(m){
+  mode = m;
+  document.getElementById('btnLive').classList.toggle('on', m==='live');
+  document.getElementById('btnSample').classList.toggle('on', m==='sample');
+  var b=document.getElementById('modeBadge');
+  b.textContent = m==='live'?'LIVE':'SAMPLE';
+  b.className = 'badge '+(m==='live'?'live':'sample');
+  if(m==='sample') banner('');   // 샘플로 돌아가면 배너 지움
+  tick();
+}
+function banner(msg){var el=document.getElementById('banner');
+  if(msg){el.textContent=msg;el.classList.add('show');}else{el.classList.remove('show');}}
+
+function buildNodes(){
+  ['cp','wk'].forEach(function(g){
+    var host=document.getElementById(g+'Nodes');host.innerHTML='';
+    NODES.filter(function(n){return g==='cp'?n.role==='control-plane':n.role==='worker';})
+    .forEach(function(n){
+      var d=document.createElement('div');d.className='node';d.id='node-'+n.name;
+      d.innerHTML='<div class="nh"><span class="ndot" style="background:#3fb950"></span>'
+        +'<span class="nname">'+n.name+'</span>'
+        +'<span class="nrole">'+n.role+'</span></div>'
+        +'<div class="over" id="over-'+n.name+'"></div>';
+      host.appendChild(d);
+    });
+  });
+}
+
+function render(d){
+  document.getElementById('model').textContent=d.model||'–';
+  document.getElementById('llm').textContent=d.llm_mode||'–';
+  document.getElementById('now').textContent=(d.now||'').replace('T',' ').replace(/\+0000$/,' UTC');
+  var runs=(d.runs||[]);
+
+  // 노드 오버레이 초기화
+  NODES.forEach(function(n){
+    document.getElementById('over-'+n.name).innerHTML='';
+    var nd=document.getElementById('node-'+n.name);
+    nd.classList.remove('pulse');
+    nd.querySelector('.ndot').style.background='#2ea043';
+    nd.style.borderColor='#212b38';
+  });
+
+  // 활성(비완료·비취소) run 을 노드에 얹는다 — 최근 것 우선, 노드당 최대 3
+  var perNode={};
+  runs.forEach(function(r){
+    if(r.state==='완료'||r.state==='취소') return;
+    var n=NODES[hashNode(r.namespace)].name;
+    (perNode[n]=perNode[n]||[]).push(r);
+  });
+  var worstSev=0, worstState='완료', anyInj=false;
+  runs.forEach(function(r){var s=stStyle(r.state);if(s.sev>worstSev){worstSev=s.sev;worstState=r.state;}
+    if((r.injection_suspects||0)>0)anyInj=true;});
+
+  Object.keys(perNode).forEach(function(name){
+    var over=document.getElementById('over-'+name), nd=document.getElementById('node-'+name);
+    var list=perNode[name].slice(0,3);
+    var nodeWorst=0;
+    list.forEach(function(r){
+      var s=stStyle(r.state);if(s.sev>nodeWorst)nodeWorst=s.sev;
+      var inj=(r.injection_suspects||0)>0;
+      var p=document.createElement('span');p.className='pin';
+      p.style.background=s.c+'22';p.style.borderColor=s.c;p.style.color=s.c;
+      if(inj)p.style.boxShadow='0 0 0 1.5px #a371f7 inset';
+      p.textContent=(inj?'⚠ ':'')+s.m+' '+r.alertname;
+      p.title=r.alertname+' · '+r.namespace+' · '+r.state;
+      over.appendChild(p);
+    });
+    // 노드 링/닷 색 = 그 노드에 얹힌 최악 상태
+    var ws=Object.keys(STYLE).reduce(function(a,k){return STYLE[k].sev===nodeWorst?k:a;},'완료');
+    var col=stStyle(ws).c;
+    nd.querySelector('.ndot').style.background=col;
+    nd.style.borderColor=col+'88';
+    if(nodeWorst>=5)nd.classList.add('pulse');
+  });
+
+  // 클러스터 경보 수준
+  var caCol=stStyle(worstState).c;
+  document.getElementById('caDot').style.background=caCol;
+  document.getElementById('caText').innerHTML='클러스터 경보 수준: <span style="color:'+caCol+'">'
+    +stStyle(worstState).m+' '+esc(worstState)+'</span>'
+    +(anyInj?' <span class="inj">· ⚠ 주입 의심 있음</span>':'')
+    +' <span class="meta">(활성 run '+runs.filter(function(r){return r.state!=='완료'&&r.state!=='취소';}).length+'건)</span>';
+
+  // 칩(상태 카운트 + totals)
+  var rbs=d.runs_by_state||{}, chips=document.getElementById('chips');chips.innerHTML='';
+  ['실행 중','부분 결과','복구 필요','실패','완료','대기','취소'].forEach(function(k){
+    if(rbs[k]){var c=document.createElement('span');c.className='chip';
+      c.innerHTML=stStyle(k).m+' '+k+' <b>'+rbs[k]+'</b>';chips.appendChild(c);}});
+  var t=d.totals||{};
+  [['alerts_in','유입'],['cards_sent','카드발송'],['cards_suppressed','억제'],
+   ['handler_errors','오류'],['emails_sent','메일'],['injection_suspects','⚠주입']].forEach(function(p){
+    if(t[p[0]]!=null){var c=document.createElement('span');c.className='chip';
+      c.innerHTML=p[1]+' <b>'+t[p[0]]+'</b>';chips.appendChild(c);}});
+
+  // run 표
+  var rows=document.getElementById('rows');
+  if(!runs.length){rows.innerHTML='<tr><td colspan="8" class="empty">아직 처리한 알림이 없습니다.</td></tr>';return;}
+  rows.innerHTML=runs.map(function(r){
+    var s=stStyle(r.state);
+    var inj=(r.injection_suspects||0)>0?' <span class="inj">⚠'+r.injection_suspects+'</span>':'';
+    var tok=(r.prompt_tokens||0)+(r.completion_tokens||0);
+    var dur=r.duration_s!=null?r.duration_s+'s':'–';
+    var conf=r.confidence!=null?(Math.round(r.confidence*100)+'%'):'–';
+    return '<tr><td class="rid">'+esc(r.run_id)+'</td>'
+      +'<td class="state" style="color:'+s.c+'">'+s.m+' '+esc(r.state)+inj+'</td>'
+      +'<td>'+esc(r.alertname)+'<div class="ns">'+esc(r.namespace)+'</div></td>'
+      +'<td class="cls">'+esc((r.classification||'—')).slice(0,160)+'</td>'
+      +'<td class="num">'+conf+'</td>'
+      +'<td class="num">'+(r.llm_calls||0)+'</td>'
+      +'<td class="num">'+(tok||'–')+'</td>'
+      +'<td class="num">'+dur+'</td></tr>';
+  }).join('');
+}
+
+function ok(){document.getElementById('poll').innerHTML=
+  '<span style="color:#3fb950">● 연결됨</span> '+(mode==='live'?'live':'sample');}
+function fail(msg){document.getElementById('poll').innerHTML=
+  '<span style="color:#f85149">● '+esc(msg)+'</span>';}
+
+function fetchJSON(url){return fetch(url,{headers:{'Accept':'application/json'},cache:'no-store'})
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});}
+
+function tick(){
+  if(mode==='sample'){
+    fetchJSON(SAMPLE_URL).then(function(d){render(d);ok();})
+      .catch(function(e){fail('샘플 로드 실패: '+e.message);});
+    return;
+  }
+  // live: 실패하면(대개 CORS/네트워크) 배너 + 샘플로 폴백. live 폴링은 유지.
+  fetchJSON(LIVE_URL).then(function(d){banner('');render(d);ok();})
+    .catch(function(e){
+      banner('라이브 /state 실패('+e.message+') — CORS/네트워크일 수 있습니다. 샘플 데이터로 표시 중. '
+        +'(live 폴링은 계속 시도합니다. 서버측 CORS 허용은 DEMO.md 참조)');
+      fail('live 실패 → 샘플');
+      fetchJSON(SAMPLE_URL).then(render).catch(function(){});
+    });
+}
+
+document.getElementById('btnLive').addEventListener('click',function(){setMode('live');});
+document.getElementById('btnSample').addEventListener('click',function(){setMode('sample');});
+
+buildNodes();
+setMode('sample');                 // 기본: 샘플(열면 바로 보임 + 녹화 안정)
+timer=setInterval(tick,POLL_MS);
+</script>
+</body></html>

@@ -1,0 +1,45 @@
+{
+  "vector": "오늘 낮 — ilwon·louise 에 원격데스크톱 리스너가 떠 있던 상태",
+  "expect": {
+    "verdict": "자세 결함",
+    "I1": "FAIL",
+    "I2": "FAIL",
+    "I3": "FAIL",
+    "I4": "FAIL",
+    "I5": "PASS"
+  },
+  "probe": {
+    "bsl_credential": {
+      "in_cluster": true,
+      "can_delete": true
+    },
+    "bucket_lock": {
+      "queryable": true,
+      "rules": []
+    },
+    "repo_password": {
+      "sha256": "0938e9d99fe8eac6b7f0c2f7626a4e364c89f3be450ce9e6d81184f0c120b8b8"
+    },
+    "remote_desktop": {
+      "checked": [
+        "lemuel",
+        "ilwon",
+        "louise",
+        "david",
+        "isagal",
+        "solomon"
+      ],
+      "listening": [
+        "ilwon:3389",
+        "louise:3389"
+      ],
+      "unknown": []
+    },
+    "backup_freshness": {
+      "name": "hourly-critical-20260922120019",
+      "age_hours": 3.9,
+      "max_age_hours": 24
+    }
+  },
+  "id": "fx-inv-03-rdp-open"
+}

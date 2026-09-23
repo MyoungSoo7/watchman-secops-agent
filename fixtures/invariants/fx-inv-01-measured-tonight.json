@@ -1,0 +1,42 @@
+{
+  "vector": "2026-09-22 실측 — 자격증명 in-cluster·버킷 잠금 없음·업스트림 기본 키, RDP 는 오늘 닫음",
+  "expect": {
+    "verdict": "자세 결함",
+    "I1": "FAIL",
+    "I2": "FAIL",
+    "I3": "FAIL",
+    "I4": "PASS",
+    "I5": "PASS"
+  },
+  "probe": {
+    "bsl_credential": {
+      "in_cluster": true,
+      "can_delete": true
+    },
+    "bucket_lock": {
+      "queryable": true,
+      "rules": []
+    },
+    "repo_password": {
+      "sha256": "0938e9d99fe8eac6b7f0c2f7626a4e364c89f3be450ce9e6d81184f0c120b8b8"
+    },
+    "remote_desktop": {
+      "checked": [
+        "lemuel",
+        "ilwon",
+        "louise",
+        "david",
+        "isagal",
+        "solomon"
+      ],
+      "listening": [],
+      "unknown": []
+    },
+    "backup_freshness": {
+      "name": "hourly-critical-20260922120019",
+      "age_hours": 3.9,
+      "max_age_hours": 24
+    }
+  },
+  "id": "fx-inv-01-measured-tonight"
+}

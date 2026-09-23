@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-05-ksm-restart",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "monitoring",
+        "severity": "warning",
+        "pod": "kps-kube-state-metrics-5fd9c99746-klnbh",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "kube-state-metrics pod has 11 restarts, last event 80m ago; node under memory churn.",
+        "summary": "kube-state-metrics restarting"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

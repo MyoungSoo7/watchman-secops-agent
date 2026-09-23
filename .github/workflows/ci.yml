@@ -1,0 +1,48 @@
+name: ci
+
+# 결정적(mock) 게이트만 돌린다. 외부 자격증명(NVIDIA·ES·K8s)이 필요한 경로는
+# CI 에 넣지 않는다 — 여기서 도는 것은 전부 stdlib-only, 네트워크 없이 재현된다.
+# 목적: README/SUBMISSION 이 인용하는 결정적 수치가 HEAD 에서 실제로 성립함을 자동 증명.
+# 런타임(python:3.12-slim)과 같은 3.12 로 고정한다.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 단위 테스트 (통제 축 79건)
+        run: |
+          python3 -m unittest test_watchman
+          python3 -m unittest test_security_layers
+          python3 -m unittest test_card_evidence
+
+      - name: 파이프라인 계약 충족 (mock, 결정적) — 10/10 (분류 정확도 아님)
+        run: python3 eval/run_eval.py
+
+      - name: 레드팀 감지 (입력 축) — 12/12 · 오탐 0
+        run: python3 eval/run_redteam.py
+
+      - name: 유출 통제 (출력 축) — 7/7 · 오탐 0 · 잔존 0
+        run: python3 eval/run_egress.py
+
+      - name: 킬체인 상관관계
+        run: python3 eval/run_chain.py
+
+      - name: 복구가능성 판정 (조회 실패는 UNKNOWN)
+        run: python3 eval/run_recovery.py
+
+      - name: 알람 없는 자세 점검 (인바리언트)
+        run: python3 eval/run_invariants.py
+
+      - name: 대표 알림 mock 완주 (실행 없음 확인)
+        run: LLM_MODE=mock python3 watchman.py replay fixtures/kube-job-failed.json

@@ -1,0 +1,27 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-scn-03-consult-api-bola-abuse",
+      "labels": {
+        "alertname": "AnomalousObjectEnumerationOnConsultAPI",
+        "namespace": "care-platform-prod",
+        "severity": "critical",
+        "source": "api-gateway-audit",
+        "rule": "Single identity high-fanout object enumeration on consultation-query API",
+        "subject": "apitoken:mobile-client:sess-8f2a4c1e",
+        "verb": "get",
+        "route": "/api/v2/consult/records"
+      },
+      "annotations": {
+        "summary": "단일 API 신원이 상담내역 조회 엔드포인트에서 다수 객체 ID 를 대량 열거 — 인가(BOLA) 남용·과다 데이터 노출 의심",
+        "description": "API 게이트웨이 감사 이상 룰 발동. 하나의 세션/토큰 신원(apitoken:mobile-client:sess-8f2a4c1e)이 상담내역 조회 API(/api/v2/consult/records)에서 서로 다른 상담 객체 ID 를 순차·대량으로 조회했습니다. 분당 요청 수와 조회한 distinct 객체 수가 평소 p99 를 수십 배 초과했고, 각 요청은 유효한 세션으로 200 을 받았습니다(개별 요청은 정상처럼 보임). 응답 본문에는 상담신청 항목(시술명·병원명·의사명)과 상담 등록 사진·결제 정보까지 담겨 응답 바이트가 비정상적으로 컸습니다(과다 데이터 노출). 소스 IP 는 평소 모바일 클라이언트 대역이 아닌 미등록 ASN 이고 User-Agent 가 정식 앱 값과 불일치합니다. 1차 경로를 레이트리밋·차단한 직후 동일 신원이 형제 엔드포인트(/api/v1/consult/detail)로 우회해 같은 열거를 재개한 정황이 함께 관측되었습니다. 배경 클래스: 정상 API 를 통한 객체단위 인가 결함(BOLA/IDOR) + 과다 데이터 노출 + 레이트리밋 부재로 인한 대량 스크래핑. 2026년 9월 강남언니(힐링페이퍼) 상담내역 조회 연동 API 유출(21만9665명, 시술·상담 등록사진·결제 등 민감정보 포함)과 동일 유형이며, 그 사고는 '1차 차단 후 다음날 공격자가 다른 경로로 재접근'한 것이 특징이다.",
+        "runbook_url": "docs/consult-api-bola-abuse-triage.md"
+      },
+      "startsAt": "2026-09-22T18:40:00Z"
+    }
+  ]
+}

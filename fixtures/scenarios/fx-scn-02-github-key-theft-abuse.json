@@ -1,0 +1,27 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-scn-02-github-key-theft-abuse",
+      "labels": {
+        "alertname": "AnomalousServiceAccountSecretAccess",
+        "namespace": "commerce-prod",
+        "severity": "critical",
+        "source": "kube-apiserver-audit",
+        "rule": "Bulk secret enumeration by CI deploy identity",
+        "subject": "system:serviceaccount:ci-cd:github-actions-deployer",
+        "verb": "list",
+        "resource": "secrets"
+      },
+      "annotations": {
+        "summary": "CI/CD 배포 신원이 다수 네임스페이스의 secret 을 대량 열람 — 탈취된 자격증명의 인클러스터 남용 의심",
+        "description": "kube-apiserver 감사로그 이상 룰 발동. GitHub Actions OIDC 로 연동된 배포용 ServiceAccount(system:serviceaccount:ci-cd:github-actions-deployer)가 평소 배포 대상이 아닌 commerce-prod·auth-prod·data-prod 등 다수 네임스페이스에서 secrets 를 list/get 하며, 그중 고객 DB 접속정보 secret(commerce-prod/postgres-app-credentials)까지 조회했습니다. 발생 시각은 KST 새벽 03시대이고 소스 IP 는 평소 러너 대역(GitHub Actions egress)이 아닌 미등록 ASN 이며, 직전 CI 파이프라인 실행 기록과 상관되지 않습니다(정상 배포 없이 자격증명만 사용). 동일 신원에서 클러스터 밖 미지 호스트로의 아웃바운드 증가도 함께 관측되었습니다. 배경 클래스: 개발자 플랫폼 마스터 자격증명 탈취 → 연동 인프라 접근 → 장기 미탐지 후 고객정보 접근. 2026년 6월 데이원컴퍼니(패스트캠퍼스)·티빙 등 '깃허브 자격증명 탈취' 동시다발 사고군과 동일 유형이며, 데이원 사고는 최초 침입(5/9)~인지(6/8)까지 약 30일간 탐지되지 않았다.",
+        "runbook_url": "docs/github-key-theft-abuse-triage.md"
+      },
+      "startsAt": "2026-09-22T18:12:00Z"
+    }
+  ]
+}

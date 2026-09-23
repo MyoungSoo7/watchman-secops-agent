@@ -1,0 +1,15 @@
+{
+  "vector": "전 항목 조회 실패 — PASS 로 읽히면 안 된다",
+  "expect": {
+    "verdict": "부분 미확인",
+    "I1": "UNKNOWN",
+    "I2": "UNKNOWN",
+    "I3": "UNKNOWN",
+    "I4": "UNKNOWN",
+    "I5": "UNKNOWN"
+  },
+  "probe": {
+    "__error__": "403 Forbidden"
+  },
+  "id": "fx-inv-05-all-unknown"
+}

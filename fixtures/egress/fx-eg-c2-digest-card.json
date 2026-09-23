@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-c2-digest-card",
+  "where": "card",
+  "expect": "clean",
+  "vector": "이미지 다이제스트·지문 등 긴 16진수가 포함된 정상 카드",
+  "text": "[watchman] run 20260923-0114-005\n이미지: ghcr.io/myoungsoo7/watchman-agent@sha256:3b9d66aabbccddeeff00112233445566778899aabbccddeeff001122334455ab\nfingerprint: fx-case-04-velero-partialfail\n제안: investigate (risk low)"
+}

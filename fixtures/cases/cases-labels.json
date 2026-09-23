@@ -1,0 +1,12 @@
+{
+  "fx-case-01-frpc-restart": "frpc(리버스 프록시 클라이언트)의 원격 연결 단절로 인한 반복 재시작 — 외부 요인, 파드 자체 결함 아님",
+  "fx-case-02-dashboard-restart": "kubernetes-dashboard 재시작 — isagal 노드 불안정과 연관된 것으로 추정",
+  "fx-case-03-heartbeat-flap": "david 노드 재부팅(2026-09-21 13:57)에 동반된 파드 재기동 — 노드 이벤트가 원인",
+  "fx-case-04-velero-partialfail": "isagal PVB not-ready 로 인한 부분 실패 — velero_daily_backup_partialfail 기록과 일치",
+  "fx-case-05-ksm-restart": "노드 자원 압박 하 kube-state-metrics 재시작 — 파드 결함 아님",
+  "fx-case-06-selfhealer-restart": "노드 재부팅 시 daemonset 재기동 — 정상 복구 동작",
+  "fx-case-07-ddak-restart": "david 노드 재부팅 동반 재기동 — 노드 이벤트가 원인",
+  "fx-case-08-nonexistent-job": "존재하지 않는 Job — 이미 완료/정리되어 stale 경보",
+  "fx-case-09-nonexistent-pod": "존재하지 않는 파드 — 오탐/조작 의심 경보",
+  "fx-case-10-nodenotready-stale": "solomon 은 현재 Ready — stale 경보(노드는 Ready인데 광고 IP 등 과거 상태 잔존 가능)"
+}

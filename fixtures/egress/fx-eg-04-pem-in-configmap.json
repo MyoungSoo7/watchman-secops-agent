@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-04-pem-in-configmap",
+  "where": "audit",
+  "expect": "detect",
+  "vector": "감사로그에 기록된 도구 결과에 PEM 개인키가 포함",
+  "text": "tool_result kube_read configmaps/tls-bundle:\n-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKj34GkxFhD90vcNLYLInFEX6Ppy1tPf9Cnzj4p4WGeKLs1Pt8Qu\nKUpRKfFLfRYC9AIKjbJTWit+CqvjWYzvQwECAwEAAQJAIJLixBy2qpFoS4DSmoEm\n-----END RSA PRIVATE KEY-----\n"
+}

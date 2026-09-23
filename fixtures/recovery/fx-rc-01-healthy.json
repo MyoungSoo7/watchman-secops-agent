@@ -1,0 +1,88 @@
+{
+  "now": "2026-09-22T16:00:00Z",
+  "expect": "복구 가능",
+  "vector": "정상 — 4시간 주기 백업이 정시, BSL Available",
+  "data": {
+    "backups": {
+      "kind": "BackupList",
+      "items": [
+        {
+          "metadata": {
+            "name": "hourly-critical-20260922120019",
+            "namespace": "velero"
+          },
+          "status": {
+            "phase": "Completed",
+            "completionTimestamp": "2026-09-22T12:05:00Z",
+            "startTimestamp": "2026-09-22T12:05:00Z",
+            "errors": 0
+          }
+        },
+        {
+          "metadata": {
+            "name": "daily-with-volumes-20260922030014",
+            "namespace": "velero"
+          },
+          "status": {
+            "phase": "Completed",
+            "completionTimestamp": "2026-09-22T03:40:00Z",
+            "startTimestamp": "2026-09-22T03:40:00Z",
+            "errors": 0
+          }
+        }
+      ]
+    },
+    "schedules": {
+      "kind": "ScheduleList",
+      "items": [
+        {
+          "metadata": {
+            "name": "hourly-critical",
+            "namespace": "velero"
+          },
+          "spec": {
+            "schedule": "0 */4 * * *",
+            "paused": false
+          },
+          "status": {
+            "lastBackup": "2026-09-22T12:00:19Z"
+          }
+        },
+        {
+          "metadata": {
+            "name": "daily-with-volumes",
+            "namespace": "velero"
+          },
+          "spec": {
+            "schedule": "0 3 * * *",
+            "paused": false
+          },
+          "status": {
+            "lastBackup": "2026-09-22T03:00:14Z"
+          }
+        }
+      ]
+    },
+    "backupstoragelocations": {
+      "kind": "BackupStorageLocationList",
+      "items": [
+        {
+          "metadata": {
+            "name": "default",
+            "namespace": "velero"
+          },
+          "spec": {
+            "provider": "aws",
+            "objectStorage": {
+              "bucket": "lemuel-backup"
+            }
+          },
+          "status": {
+            "phase": "Available"
+          }
+        }
+      ]
+    }
+  },
+  "id": "fx-rc-01-healthy"
+}

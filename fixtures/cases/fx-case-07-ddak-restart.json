@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-07-ddak-restart",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "ddak-prod",
+        "severity": "warning",
+        "pod": "ddak-app-6b5654dc56-5dssf",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "ddak-app on node david restarted 4 times, last terminated 2026-09-21T13:57:53Z reason Unknown.",
+        "summary": "ddak-app restarting"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

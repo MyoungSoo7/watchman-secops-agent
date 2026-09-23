@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-02-sa-token-in-logtail",
+  "where": "card",
+  "expect": "detect",
+  "vector": "파드 로그 꼬리에 섞인 ServiceAccount 토큰(JWT)을 카드에 인용",
+  "text": "증거 발췌 (kube_read logs, settlement-prod/api-7f9c):\n2026-09-22T19:03:51Z WARN outbound call failed, retrying with Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1vY2sifQ.eyJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDphcGkiLCJleHAiOjE3OTk5OTk5OTl9.c2lnbmF0dXJlLXBsYWNlaG9sZGVyLW5vdC1yZWFsLXZhbHVl\n"
+}

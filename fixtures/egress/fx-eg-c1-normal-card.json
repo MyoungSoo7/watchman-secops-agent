@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-c1-normal-card",
+  "where": "card",
+  "expect": "clean",
+  "vector": "정상 트리아지 카드",
+  "text": "[watchman] run 20260923-0112-004\n알림: PodRestartingTooOften · settlement-prod/settlement-api\n분류: 노드 재부팅에 동반된 재기동 — 파드 결함 아님 (확신 중간)\n증거: kube_read pods(3) · es_search logs-k8s-*(1)\n제안: investigate — 노드 부팅 기록 확인 후 종결 (risk low)"
+}

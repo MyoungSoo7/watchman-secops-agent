@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-03-heartbeat-flap",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "lemuel-monitor",
+        "severity": "warning",
+        "pod": "tgbot-heartbeat-q2b7q",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "tgbot-heartbeat pod on node david has 34 restarts; last terminated 2026-09-21T13:57:53Z reason Unknown (node reboot suspected).",
+        "summary": "heartbeat flapping"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

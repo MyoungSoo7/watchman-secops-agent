@@ -1,0 +1,47 @@
+{
+  "vector": "권고 반영 후 — 삭제 불가 토큰·7일 보존 잠금·교체된 키",
+  "expect": {
+    "verdict": "자세 양호",
+    "I1": "PASS",
+    "I2": "PASS",
+    "I3": "PASS",
+    "I4": "PASS",
+    "I5": "PASS"
+  },
+  "probe": {
+    "bsl_credential": {
+      "in_cluster": true,
+      "can_delete": false
+    },
+    "bucket_lock": {
+      "queryable": true,
+      "rules": [
+        {
+          "id": "lock-all-7d",
+          "days": 7
+        }
+      ]
+    },
+    "repo_password": {
+      "sha256": "973e1fc494287e9650d9577ab2ef40f1e995e8f2507c5fe3c5f5eb335ab566db"
+    },
+    "remote_desktop": {
+      "checked": [
+        "lemuel",
+        "ilwon",
+        "louise",
+        "david",
+        "isagal",
+        "solomon"
+      ],
+      "listening": [],
+      "unknown": []
+    },
+    "backup_freshness": {
+      "name": "hourly-critical-20260922120019",
+      "age_hours": 3.9,
+      "max_age_hours": 24
+    }
+  },
+  "id": "fx-inv-02-hardened"
+}

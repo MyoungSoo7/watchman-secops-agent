@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-01-frpc-restart",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "frp-prod",
+        "severity": "warning",
+        "pod": "frp-frpc-56f6f5499b-zgj4k",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "Pod frp-prod/frp-frpc has restarted 12 times. Container last terminated with reason Error at 2026-09-17T10:52:02Z.",
+        "summary": "frpc pod restarting"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

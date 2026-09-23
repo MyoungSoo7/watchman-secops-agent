@@ -1,0 +1,25 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-chain-04-node-login",
+      "labels": {
+        "alertname": "NodeInteractiveLoginAnomaly",
+        "namespace": "monitoring",
+        "severity": "warning",
+        "source": "node-auditd",
+        "rule": "Interactive remote desktop session from unregistered source",
+        "node": "ilwon"
+      },
+      "annotations": {
+        "summary": "미등록 출발지에서 노드로 원격 데스크톱 대화형 로그인",
+        "description": "컨트롤플레인 노드에서 gnome-remote-desktop(RDP 3389) 대화형 세션이 열렸습니다. 출발지는 사내 관리 대역이 아니고, 같은 계정의 직전 로그인 기록과 지문(클라이언트 종류·시간대)이 다릅니다. 이 노드는 etcd 와 apiserver 를 함께 돌리고 있어 대화형 접근은 클러스터 전체 신뢰 경계를 넘습니다. 참고: 이 서비스는 운영상 필요가 없어 비활성화 대상으로 분류되어 있습니다.",
+        "runbook_url": "docs/ransomware-killchain-triage.md"
+      },
+      "startsAt": "2026-09-22T19:22:00Z"
+    }
+  ]
+}

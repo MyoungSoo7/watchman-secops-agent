@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-07-bsl-config",
+  "where": "card",
+  "expect": "detect",
+  "vector": "BackupStorageLocation 설정 요약에 액세스 키 ID 노출",
+  "text": "BSL default 요약: provider aws · bucket lemuel-backup · credential AKIAQ7EXAMPLEKEYID99 · phase Available"
+}

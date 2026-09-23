@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-05-bearer-in-suggestion",
+  "where": "card",
+  "expect": "detect",
+  "vector": "조치 제안 문구 안에 실제 Bearer 토큰이 박힌 curl 명령",
+  "text": "조치 제안(실행 안 함): 아래 명령으로 백업 목록을 확인하세요.\ncurl -H 'Authorization: Bearer sha256~ExampleTokenValue0123456789abcdefGHIJ' https://kubernetes.default.svc/apis/velero.io/v1/backups"
+}

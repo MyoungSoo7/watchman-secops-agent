@@ -1,0 +1,22 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-08-nonexistent-job",
+      "labels": {
+        "alertname": "KubeJobFailed",
+        "namespace": "settlement-prod",
+        "severity": "warning",
+        "job_name": "report-cron-nonexistent-999"
+      },
+      "annotations": {
+        "description": "Job settlement-prod/report-cron-nonexistent-999 failed to complete.",
+        "summary": "job did not complete"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-06-selfhealer-restart",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "kube-system",
+        "severity": "warning",
+        "pod": "node-self-healer-wcgnz",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "node-self-healer daemonset pod restarted 4 times, last 80m ago; correlates with node reboot.",
+        "summary": "self-healer restarting"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

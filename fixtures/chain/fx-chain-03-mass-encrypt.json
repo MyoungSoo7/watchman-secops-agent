@@ -1,0 +1,25 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-chain-03-mass-encrypt",
+      "labels": {
+        "alertname": "FalcoMassFileRenameInContainer",
+        "namespace": "settlement-prod",
+        "severity": "warning",
+        "source": "falco",
+        "rule": "Mass file rename with uniform suffix in mounted volume",
+        "node": "solomon"
+      },
+      "annotations": {
+        "summary": "마운트된 볼륨에서 동일 접미사로 대량 파일 이름 변경 — 암호화 진행 의심",
+        "description": "settlement-prod 의 한 컨테이너에서 PVC 마운트 경로 하위 파일 4,812개가 90초 안에 동일 접미사(.locked)로 rename 되었고, 같은 구간에 해당 노드의 볼륨 쓰기량이 평소 대비 급증했습니다. 프로세스는 컨테이너 이미지에 포함되지 않은 바이너리이며 부모는 셸입니다. 정상적인 로그 로테이션·압축 작업은 접미사가 날짜 기반이고 건수도 두 자릿수라 이 패턴과 구분됩니다.",
+        "runbook_url": "docs/ransomware-killchain-triage.md"
+      },
+      "startsAt": "2026-09-22T19:04:00Z"
+    }
+  ]
+}

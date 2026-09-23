@@ -1,0 +1,46 @@
+{
+  "vector": "굳힌 자세인데 백업만 31시간 낡음 — 어떤 알람도 울리지 않는 부패",
+  "expect": {
+    "verdict": "자세 결함",
+    "I1": "PASS",
+    "I2": "PASS",
+    "I3": "PASS",
+    "I4": "PASS",
+    "I5": "FAIL"
+  },
+  "probe": {
+    "bsl_credential": {
+      "in_cluster": false
+    },
+    "bucket_lock": {
+      "queryable": true,
+      "rules": [
+        {
+          "id": "lock-all-7d",
+          "days": 7
+        }
+      ]
+    },
+    "repo_password": {
+      "sha256": "5be3b05a2339aecdb0c543afefc6a563085f5861e6c109dce236363b3319566e"
+    },
+    "remote_desktop": {
+      "checked": [
+        "lemuel",
+        "ilwon",
+        "louise",
+        "david",
+        "isagal",
+        "solomon"
+      ],
+      "listening": [],
+      "unknown": []
+    },
+    "backup_freshness": {
+      "name": "hourly-critical-20260921050019",
+      "age_hours": 31.0,
+      "max_age_hours": 24
+    }
+  },
+  "id": "fx-inv-06-stale-backup"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-c3-recovery-card",
+  "where": "card",
+  "expect": "clean",
+  "vector": "복구가능성 조사 요약 카드(값이 아니라 판정만)",
+  "text": "복구가능성: 최근 정상 백업 hourly-critical-20260922120019 (T-4h) · BSL default phase Available · 스케줄 2개 모두 정시\n판정: 복구 가능 — 단, 오프사이트 버킷 잠금 없음(자격증명 하나로 원격 사본 삭제 가능)"
+}

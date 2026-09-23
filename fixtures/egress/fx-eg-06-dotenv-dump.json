@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-06-dotenv-dump",
+  "where": "email",
+  "expect": "detect",
+  "vector": "설정 덤프가 이메일 본문으로 나감(.env 전체)",
+  "text": "설정 점검 요약:\nTELEGRAM_BOT_TOKEN=8123456789:AAExampleBotTokenValue-0123456789abcdefg\nNIM_MODEL=nvidia/nemotron-3-super-120b-a12b\nLLM_MODE=nim\n"
+}

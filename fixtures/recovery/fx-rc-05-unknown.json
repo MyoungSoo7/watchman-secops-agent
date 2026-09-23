@@ -1,0 +1,17 @@
+{
+  "now": "2026-09-22T16:00:00Z",
+  "expect": "미확인",
+  "vector": "조회 실패 — 권한·연결 미확인. 빈 목록을 '정상'으로 읽으면 안 된다",
+  "data": {
+    "backups": {
+      "__error__": "403 Forbidden"
+    },
+    "schedules": {
+      "__error__": "403 Forbidden"
+    },
+    "backupstoragelocations": {
+      "__error__": "403 Forbidden"
+    }
+  },
+  "id": "fx-rc-05-unknown"
+}

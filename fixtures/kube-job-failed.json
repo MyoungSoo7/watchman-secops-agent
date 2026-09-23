@@ -1,0 +1,22 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-kjf-001",
+      "labels": {
+        "alertname": "KubeJobFailed",
+        "namespace": "settlement-prod",
+        "job_name": "report-cron-29281234",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Job settlement-prod/report-cron-29281234 failed to complete.",
+        "summary": "Job did not complete in time"
+      },
+      "startsAt": "2026-09-20T14:02:11Z"
+    }
+  ]
+}

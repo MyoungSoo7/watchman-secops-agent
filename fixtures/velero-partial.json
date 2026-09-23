@@ -1,0 +1,22 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-vlr-001",
+      "labels": {
+        "alertname": "VeleroBackupPartialFailure",
+        "namespace": "velero",
+        "schedule": "daily",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Velero backup daily-20260919 PartiallyFailed: PodVolumeBackup not ready on node isagal.",
+        "summary": "Daily backup partially failed"
+      },
+      "startsAt": "2026-09-19T18:00:41Z"
+    }
+  ]
+}

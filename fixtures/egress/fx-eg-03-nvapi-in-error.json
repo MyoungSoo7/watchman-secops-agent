@@ -1,0 +1,7 @@
+{
+  "id": "fx-eg-03-nvapi-in-error",
+  "where": "card",
+  "expect": "detect",
+  "vector": "LLM 호출 실패 메시지에 NVIDIA API 키가 그대로 포함",
+  "text": "부분 결과 카드 — LLM 호출 실패\nupstream 401: request used key nvapi-EXAMPLEexampleEXAMPLEexample0123456789abcd\n재시도 전 키 유효성 확인 필요."
+}

@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-09-nonexistent-pod",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "sparta-prod",
+        "severity": "warning",
+        "pod": "ghost-pod-does-not-exist",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "Pod sparta-prod/ghost-pod-does-not-exist is crash looping.",
+        "summary": "crash looping"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-scn-05-jwt-session-replay-hijack",
+      "labels": {
+        "alertname": "AnomalousSessionTokenReplayAcrossGeoIP",
+        "namespace": "identity-platform-prod",
+        "severity": "critical",
+        "source": "auth-session-audit",
+        "rule": "Valid session identity reused from a new source IP/ASN mid-session (impossible travel + token replay)",
+        "subject": "session:jwt:sub-user-3391:jti-b7c2a9e1",
+        "verb": "get",
+        "route": "/api/v1/account/export"
+      },
+      "annotations": {
+        "summary": "유효한 세션/JWT 신원이 발급 직후 지리적으로 불가능한 위치에서 동일 토큰으로 재사용 — 세션 하이재킹·토큰 리플레이 의심",
+        "description": "인증/세션 감사 이상 룰 발동. 하나의 유효 세션 신원(JWT sub-user-3391, jti b7c2a9e1)이 발급 직후 평소 대역(국내 모바일 ASN)에서 정상 사용되다가, 몇 분 안에 지리적으로 불가능한 위치(미등록 해외 ASN)에서 같은 토큰으로 재사용됐습니다(임파서블 트래블). 이전 IP 의 세션이 아직 활성인 상태에서 새 소스 IP·새 User-Agent 로 동일 jti 가 동시에 관측됐고(토큰 리플레이), 각 요청은 서명이 유효하고 만료 전이라 200 을 받습니다(개별 요청은 정상처럼 보임). 새 위치에서 곧바로 민감 액션(계정정보 대량 조회·내보내기 /api/v1/account/export, 관리용 API 호출)이 이어졌습니다. 배경 클래스: 공격자가 유효한 세션 쿠키/토큰을 탈취(단말 악성코드·HAR 첨부·XSS)해 정상 사용자로 위장하는 세션 하이재킹/토큰 리플레이. 2022-12 CircleCI 사고(엔지니어 노트북 악성코드가 2FA-backed SSO 세션 쿠키를 탈취해 원격지에서 직원을 위장·프로덕션 침투)와 2023 Okta 지원 시스템 사고(HAR 파일 세션 토큰으로 5개 고객 세션을 하이재킹)가 같은 유형입니다. 중요한 성질: 스테이트리스 JWT 는 개별 토큰을 콕 집어 폐기할 수 없어, 봉쇄 지렛대는 서명키 회전(발급된 모든 토큰 무효화 = 대량 재인증)이거나 jti denylist + 단명 TTL·리프레시 회전입니다.",
+        "runbook_url": "docs/jwt-session-replay-hijack-triage.md"
+      },
+      "startsAt": "2026-09-22T18:55:00Z"
+    }
+  ]
+}

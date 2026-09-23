@@ -1,0 +1,22 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-04-velero-partialfail",
+      "labels": {
+        "alertname": "VeleroBackupPartiallyFailed",
+        "namespace": "velero",
+        "severity": "warning",
+        "schedule": "daily-with-volumes"
+      },
+      "annotations": {
+        "description": "Velero backup daily-with-volumes-20260919030028 finished PartiallyFailed. Suspected isagal PVB not-ready.",
+        "summary": "backup partially failed"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

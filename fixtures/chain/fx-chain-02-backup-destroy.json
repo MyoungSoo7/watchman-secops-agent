@@ -1,0 +1,26 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-chain-02-backup-destroy",
+      "labels": {
+        "alertname": "VeleroBackupDeleted",
+        "namespace": "velero",
+        "severity": "warning",
+        "source": "kube-apiserver-audit",
+        "rule": "Backup objects deleted outside retention policy",
+        "verb": "delete",
+        "resource": "backups"
+      },
+      "annotations": {
+        "summary": "보존 정책 만료 전 백업 오브젝트가 삭제됨 — 백업 삭제 6건 + 스케줄 1건",
+        "description": "velero 네임스페이스에서 만료 시각(TTL 168h/720h)이 아직 남아 있는 백업 오브젝트 6건이 15분 안에 연속 delete 되었고, 4시간 주기 스케줄 1건이 함께 삭제되었습니다. 삭제 주체는 직전 알림에서 secret 을 열람한 것과 같은 백업 ServiceAccount 이며, GitOps(ArgoCD) 동기화 이벤트나 사람의 kubectl 세션과는 상관되지 않습니다. 오프사이트 버킷에는 객체 잠금(bucket lock) 규칙이 설정되어 있지 않아, 같은 자격증명으로 원격 사본까지 삭제 가능한 상태입니다. 즉 이 시점 이후로는 '백업이 있다'가 아니라 '무엇이 남았는가'를 직접 조회해야 합니다.",
+        "runbook_url": "docs/ransomware-killchain-triage.md"
+      },
+      "startsAt": "2026-09-22T18:41:00Z"
+    }
+  ]
+}

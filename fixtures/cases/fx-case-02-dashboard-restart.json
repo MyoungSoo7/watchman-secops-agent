@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "watchman",
+  "alerts": [
+    {
+      "status": "firing",
+      "fingerprint": "fx-case-02-dashboard-restart",
+      "labels": {
+        "alertname": "PodRestartingTooOften",
+        "namespace": "kubernetes-dashboard",
+        "severity": "warning",
+        "pod": "kubernetes-dashboard-6c7b75ffc-vpss4",
+        "channel": "telegram"
+      },
+      "annotations": {
+        "description": "kubernetes-dashboard pod on node isagal has 13 restarts, last terminated reason Error at 2026-09-18T12:24:14Z.",
+        "summary": "dashboard restarting"
+      },
+      "startsAt": "2026-09-22T00:00:00Z"
+    }
+  ]
+}

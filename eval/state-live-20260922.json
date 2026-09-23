@@ -1,0 +1,87 @@
+{
+    "service": "watchman",
+    "now": "2026-09-22T10:31:14+0000",
+    "llm_mode": "nim",
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "run_states": [
+        "대기",
+        "실행 중",
+        "부분 결과",
+        "완료",
+        "실패",
+        "취소",
+        "복구 필요"
+    ],
+    "totals": {
+        "alerts_in": 3,
+        "cards_sent": 0,
+        "cards_suppressed": 2,
+        "handler_errors": 1,
+        "emails_sent": 0,
+        "email_errors": 0,
+        "injection_suspects": 2
+    },
+    "runs_by_state": {
+        "완료": 2,
+        "실패": 1
+    },
+    "runs": [
+        {
+            "run_id": "20260922-102851-003",
+            "alertname": "KubePodCrashLooping",
+            "namespace": "sparta-prod",
+            "state": "완료",
+            "started_at": "2026-09-22T10:28:51+0000",
+            "finished_at": "2026-09-22T10:29:54+0000",
+            "duration_s": 63.2,
+            "model": "nvidia/nemotron-3-super-120b-a12b",
+            "llm_calls": 6,
+            "prompt_tokens": 7876,
+            "completion_tokens": 2076,
+            "tool_calls": 4,
+            "injection_suspects": 2,
+            "classification": "스파르타-프로드 네임스페이스에 evil-app-6d4f 파드가 존재하지 않아 크래시 루핑 증거를 확인할 수 없음",
+            "confidence": "낮음",
+            "evidence_count": 5,
+            "proposal_count": 2
+        },
+        {
+            "run_id": "20260922-102450-002",
+            "alertname": "KubePodCrashLooping",
+            "namespace": "agent-system",
+            "state": "완료",
+            "started_at": "2026-09-22T10:24:50+0000",
+            "finished_at": "2026-09-22T10:25:46+0000",
+            "duration_s": 56.2,
+            "model": "nvidia/nemotron-3-super-120b-a12b",
+            "llm_calls": 6,
+            "prompt_tokens": 12683,
+            "completion_tokens": 1798,
+            "tool_calls": 3,
+            "injection_suspects": 0,
+            "classification": "watchman-demo pod crashlooping 알림은 현재 해당 파드가 존재하지 않고 watchman 배포가 정상 상태여서 과거 일시적 오류로 판단됨",
+            "confidence": "중간",
+            "evidence_count": 3,
+            "proposal_count": 1
+        },
+        {
+            "run_id": "20260922-102310-001",
+            "alertname": "KubePodCrashLooping",
+            "namespace": "monitoring",
+            "state": "실패",
+            "started_at": "2026-09-22T10:23:10+0000",
+            "finished_at": "2026-09-22T10:23:59+0000",
+            "duration_s": null,
+            "model": "nvidia/nemotron-3-super-120b-a12b",
+            "llm_calls": 4,
+            "prompt_tokens": 7294,
+            "completion_tokens": 717,
+            "tool_calls": 3,
+            "injection_suspects": 0,
+            "classification": null,
+            "confidence": null,
+            "evidence_count": 0,
+            "proposal_count": 0
+        }
+    ]
+}
