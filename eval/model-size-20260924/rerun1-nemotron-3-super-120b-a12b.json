@@ -1,0 +1,127 @@
+{
+ "model": "nvidia/nemotron-3-super-120b-a12b",
+ "reps": 1,
+ "rows": [
+  {
+   "case": "fx-case-03-heartbeat-flap",
+   "rep": 0,
+   "seconds": 243.0,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "심박 알림 pod의 재시작 횟수가 실제로는 낮고 현재 정상 상태에서 실행 중임"
+  },
+  {
+   "case": "fx-case-05-ksm-restart",
+   "rep": 0,
+   "seconds": 175.6,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "PodRestartingTooOften 경보는 현재 pod의 재시작 횟수(3)와 로그에서 보이는 일시적 연결 오류만을 기준으로 과대 경보로 판단됨"
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "rep": 0,
+   "seconds": 63.3,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "node-self-healer pod의 재시작은 노드 재부팅과 연관된 정상 동작으로 보이며, 경보는 오탐으로 판단됨"
+  },
+  {
+   "case": "fx-case-07-ddak-restart",
+   "rep": 0,
+   "seconds": 110.5,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "Pod 재시작은 업스트림 연결 오류로 인한 일시적 현상이며, 현재 상태는 정상 실행 중"
+  },
+  {
+   "case": "fx-case-09-nonexistent-pod",
+   "rep": 0,
+   "seconds": 134.2,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "현재 pod은 정상 상태이며, 과거 일시적 오류 후 복구됨. 알림은 오탐으로 판단됨."
+  },
+  {
+   "case": "fx-scn-05-jwt-session-replay-hijack",
+   "rep": 0,
+   "seconds": 208.1,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "신원 토큰 재사용 의심 알림에 대한 확인 증거가 부족하여 판정 불가"
+  }
+ ]
+}

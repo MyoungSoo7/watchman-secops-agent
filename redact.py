@@ -32,12 +32,26 @@ RULES = [
      re.compile(r"\b\d{8,12}:[A-Za-z0-9_\-]{30,}\b")),
     ("bearer_header", "Authorization Bearer 값",
      re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=\-]{20,}")),
+    ("vendor_api_key", "LLM·클라우드 API 키",
+     re.compile(r"\bsk-(?:ant-|proj-)?[A-Za-z0-9_\-]{20,}|\bAIza[0-9A-Za-z_\-]{30,}")),
+    ("url_userinfo", "URL 안의 비밀번호",
+     # postgres://user:pw@host — 비밀번호(그룹 1)만 가리고 계정·호스트는 남긴다.
+     re.compile(r"(?i)\b[a-z][a-z0-9+.\-]*://[^\s/:@\"']+:([^\s/@\"']+)@")),
     ("kv_secret", "키=값 형태의 비밀값",
      # 환경변수 꼴(R2_SECRET_ACCESS_KEY=...)까지 잡도록 접두사를 허용한다.
+     # 키 뒤의 닫는 따옴표(["']?)는 2026-09-24 추가 — 없으면 JSON·repr 꼴
+     # {"password": "..."} 이 통째로 통과했다. redact 는 json.dumps 결과에 걸리므로
+     # 사실상 도구 결과 전부가 이 꼴이었다. 값 최소 길이도 12 → 8.
      re.compile(r"(?i)(?<![A-Za-z0-9_])[A-Za-z0-9_\-]{0,24}"
                 r"(?:password|passwd|secret|api[_-]?key|access[_-]?key|token|credential)"
-                r"[A-Za-z0-9_\-]{0,12}\s*[:=]\s*[\"']?([^\s\"',}]{12,})")),
+                r"[A-Za-z0-9_\-]{0,12}[\"']?\s*[:=]\s*[\"']?([^\s\"',}]{8,})")),
 ]
+
+# guard() 가 딕셔너리를 돌 때, 키 이름이 이 꼴이면 값의 생김새와 무관하게 통째로 가린다.
+# 끝이 맞아야 한다 — prompt_tokens·token_count 같은 수치 필드는 비밀이 아니다.
+_SENSITIVE_KEY = re.compile(
+    r"(?i)(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key|private[_-]?key"
+    r"|token|credentials?)\Z")
 
 # k8s Secret 응답 형태 — data 블록의 base64 값을 통째로 잡는다.
 _SECRET_DATA = re.compile(r"(?i)\"?data\"?\s*:\s*[\{\[]([^\}\]]{16,})[\}\]]")
@@ -82,10 +96,10 @@ def _spans(text):
     out = []
     for rid, label, rx in RULES:
         for m in rx.finditer(text):
-            # kv_secret 은 값 부분만 가린다(키 이름은 남겨야 무엇이 걸렸는지 읽힌다).
-            if rid == "kv_secret":
-                g = m.lastindex or 0
-                out.append((m.start(g), m.end(g), rid, label))
+            # 그룹이 있는 규칙(kv_secret·url_userinfo)은 값 부분만 가린다
+            # (키 이름·계정은 남겨야 무엇이 걸렸는지 읽힌다).
+            if rx.groups:
+                out.append((m.start(1), m.end(1), rid, label))
             else:
                 out.append((m.start(), m.end(), rid, label))
     out.extend(_b64_spans(text))
@@ -135,7 +149,16 @@ def guard(obj, _hits=None):
         hits.extend(h)
         return clean, hits
     if isinstance(obj, dict):
-        return {k: guard(v, hits)[0] for k, v in obj.items()}, hits
+        out = {}
+        for k, v in obj.items():
+            if (isinstance(k, str) and isinstance(v, str) and v
+                    and _SENSITIVE_KEY.search(k) and not _PLACEHOLDER.fullmatch(v)):
+                out[k] = "[REDACTED:sensitive_key]"
+                hits.append({"rule": "sensitive_key", "label": "비밀 키 이름의 값",
+                             "length": len(v)})
+            else:
+                out[k] = guard(v, hits)[0]
+        return out, hits
     if isinstance(obj, (list, tuple)):
         return [guard(v, hits)[0] for v in obj], hits
     return obj, hits

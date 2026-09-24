@@ -1,0 +1,25 @@
+# 예시: K3s + ECK(Elasticsearch) + Velero 클러스터. 개발사 자체 운영 설정과 같은 구성이다.
+# 비밀값은 여기 두지 않는다 — 미리 만든 Secret 을 가리킨다:
+#   kubectl -n watchman create secret generic watchman-secret \
+#     --from-literal=NVIDIA_API_KEY=... --from-literal=ES_PASS=... --from-literal=TELEGRAM_BOT_TOKEN=...
+llm:
+  mode: nim
+secret:
+  existingSecret: watchman-secret
+elasticsearch:
+  url: https://logs-es-http.logging.svc.cluster.local:9200
+  user: watchman          # 로그 인덱스 read 만 가진 전용 사용자 권장
+  verifyTLS: false        # ECK 자체서명 CA
+  allowedPatterns: "logstash-*"
+telegram:
+  chatId: ""              # 카드 받을 채팅 ID
+recovery:
+  enabled: true
+invariants:
+  enabled: true
+persistence:
+  storageClass: local-path
+networkPolicy:
+  # K3s 서비스망 + (노드망 CIDR 을 여기에 추가: apiserver 실주소가 노드 IP 다)
+  apiServerCIDRs: ["10.43.0.0/16"]
+  invariantCIDRs: []      # 노드망 CIDR — RDP 포트 개방 점검용

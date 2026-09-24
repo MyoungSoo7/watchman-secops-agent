@@ -1,0 +1,171 @@
+{
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "reps": 1,
+ "rows": [
+  {
+   "case": "fx-case-01-frpc-restart",
+   "rep": 0,
+   "seconds": 191.2,
+   "llm_calls": 5,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 429 (5회, 대기 79s)",
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 429 (5회, 대기 79s)"
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "rep": 0,
+   "seconds": 114.0,
+   "llm_calls": 1,
+   "tool_ok": 1,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 503 (5회, 대기 80s)",
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 503 (5회, 대기 80s)"
+  },
+  {
+   "case": "fx-case-08-nonexistent-job",
+   "rep": 0,
+   "seconds": 215.3,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "존재하지 않는 잡 이름의 테스트/오탐 알림 — 잡 객체는 있으나 실행 이력(파드·이벤트·로그) 전혀 없음"
+  },
+  {
+   "case": "fx-case-10-nodenotready-stale",
+   "rep": 0,
+   "seconds": 62.9,
+   "llm_calls": 3,
+   "tool_ok": 2,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "노드 solomon 이 현재 Ready 상태이며, 알림은 2일 전 NotReady 발생 후 해제되지 않은 스테일 알림임"
+  },
+  {
+   "case": "fx-scn-01-webshell-rce-falco",
+   "rep": 0,
+   "seconds": 176.3,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "Falco 웹셸 경보이나 로그·클러스터 상태에서 악성 행위 증거 미발견 — 오탐 가능성 높음"
+  },
+  {
+   "case": "fx-scn-02-github-key-theft-abuse",
+   "rep": 0,
+   "seconds": 282.0,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "감사로그·RBAC 증거 미확보로 알림 주장(대량 시크릿 열람·비정상 IP·아웃바운드 증가) 검증 불가 — 추가 조사 필요"
+  },
+  {
+   "case": "fx-scn-03-consult-api-bola-abuse",
+   "rep": 0,
+   "seconds": 109.0,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "BOLA 의심 경보이나 최근 2시간 로그·리소스에서 정황 미확인 — 검색 윈도우 밖(2일 전) 사건 가능성"
+  },
+  {
+   "case": "fx-scn-05-jwt-session-replay-hijack",
+   "rep": 0,
+   "seconds": 138.1,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "세션 하이재킹 의심 알림이나 로그·리소스 증거 부재로 확인 불가 — 네임스페이스 미존재·로그 미수집·시간차 2일"
+  }
+ ]
+}

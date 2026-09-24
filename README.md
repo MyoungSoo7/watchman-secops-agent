@@ -1,7 +1,7 @@
 # Watchman(파수꾼)
 
-> **심사용 공개 스냅샷.** 개발 리포(비공개)의 `090fb56` 시점을 히스토리 없이 옮긴 사본이다.
-> 변경점: 개인 이메일 1곳 마스킹, 내부 제출 초안(`request.md`) 제외. 코드·테스트·평가 하네스는 원본과 동일(119 tests OK).
+> **심사용 공개 스냅샷.** 개발 리포(비공개)의 `63bec51` 시점(2026-09-25)을 히스토리 없이 옮긴 사본이다.
+> 변경점: 개인 이메일 마스킹, 내부 문서 2개(`request.md` 제출 초안·`docs/PRICING-DRAFT.md` 가격 초안) 제외. 코드·테스트·평가 하네스는 원본과 동일.
 
 Lemuel K3s 클러스터의 Alertmanager 알림을 받아 **로그 조회 → 원인 분류 → 조치 제안**을
 수행하는 보안 통제된 SecOps 에이전트. 전 구간 read-only, 자동 실행 없음.
@@ -39,13 +39,16 @@ curl -X POST localhost:8687/alert -d @fixtures/velero-partial.json
 |---|---|
 | **평가 1회전** — 파이프라인 계약 충족 표(10/10, mock) + 분류 정확도 채점 근거(live) | [eval/REPORT.md](eval/REPORT.md) · 재현 `python3 eval/run_eval.py` |
 | **레드팀(입력 축)** — 주입 감지 12/12 + 정상 오탐 0 결과표 | [eval/REDTEAM.md](eval/REDTEAM.md) · 재현 `python3 eval/run_redteam.py` |
+| **OWASP Agentic Top 10 대응표** — ASI01~10별 통제·증거·못 막는 것, 레드팀 12건 ASI 태그 | [eval/OWASP-ASI-MAP.md](eval/OWASP-ASI-MAP.md) |
 | **유출 통제(출력 축)** — 카드·메일·감사로그로 나가는 비밀값 차단 7/7, 오탐 0, 마스킹 후 잔존 0 | `fixtures/egress/` · 재현 `python3 eval/run_egress.py` |
 | **킬체인 상관관계** — 개별로는 warning 인 4건이 *순서*로 랜섬웨어가 되는 승격 | `fixtures/chain/` · 재현 `python3 eval/run_chain.py` |
 | **복구가능성 조사** — "백업이 있다"와 "복구할 수 있다"를 가르는 판정(velero read-only) | `fixtures/recovery/` · 재현 `python3 eval/run_recovery.py` |
 | **알람 없는 자세 점검** — 경보가 울리지 않는 구조적 결함(자격증명 범위·버킷 잠금·기본 암호화 키·RDP·백업 신선도) | `fixtures/invariants/` · 재현 `python3 eval/run_invariants.py` |
 | **보안통제 6축 실측** — 403 로그·차단 로그·⚠ 카드·감사 발췌 | [eval/evidence-P1-P2-P3-S2.md](eval/evidence-P1-P2-P3-S2.md) |
+| **모델 크기별 도구 호출 성공률** — 11B·30B·120B·550B 를 같은 스텁 관측·같은 루프로 (11B 인자 거부 13%, 120B 0%) | [eval/model-size-20260924.md](eval/model-size-20260924.md) · 재현 `python3 eval/run_model_size.py` |
 | **in-cluster 실관측 run 채점** — 실 NIM 분류 정답률 근거 | [eval/report-20260922.md](eval/report-20260922.md) · [eval/score_cases.py](eval/score_cases.py) |
 | **NVIDIA 실행 기록** — run 별 모델 ID·호출 수·토큰·소요 시간 | `GET /state` 집계 (아래) |
+| **호출 단위 트레이스** — LLM 스텝·NIM 모델 시도(폴백 표시)·툴·NV 가드·백오프별 시작/소요/상태 (NeMo Agent Toolkit 식 프로파일링을 stdlib 로) | `GET /trace?run=<id>` · 관제 콘솔에서 run 행 클릭 → 간트 타임라인. 감사로그 `kind=span` |
 | **아키텍처 한눈에** — 알림→조사→분류→카드 + 통제 경계 | [docs/architecture.md](docs/architecture.md) (mermaid) |
 | **감사로그 원장** — 매 스텝 append-only 기록 | `audit.jsonl` (gitignore, PVC 영속화). 발췌는 evidence 문서에 마스킹본 |
 

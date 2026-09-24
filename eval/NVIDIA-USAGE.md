@@ -114,6 +114,12 @@ ROADMAP §1.1 의 "Build Skill API 실사용 + 호출 기록" 요건을 **기본
    env 세 줄 교체로 그대로 실호출된다(코드 무변경).
 3. `completion_tokens=1024` 는 어댑터 `max_tokens=1024` 상한에 걸린 값 — 응답이 상한에서 잘렸다는 뜻(호출 자체는 정상 200).
 
+## 3.5 NVIDIA 안전 가드 — 주입 2차 판정 (2026-09-24)
+
+조사 LLM(`nemotron-3-super-120b`, 폴백 `ultra-550b`)과 별개로, 알림 주석 텍스트마다 `nvidia/llama-3.1-nemotron-safety-guard-8b-v3` 를 한 번 호출한다(온도 0, max_tokens 60, 타임아웃 15s, 송신 전 redact).
+호출은 감사로그 `guard_verdict`(모델·판정·지연 ms) / `guard_error` 로 남고 `/state` 합계 `guard_checks`·`guard_flags`·`guard_errors` 로 보인다.
+실측·후보 비교·한계: `eval/guard-20260924.md`.
+
 ## 4. 재현 명령
 
 ```bash

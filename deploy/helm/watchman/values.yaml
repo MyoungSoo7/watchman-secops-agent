@@ -1,0 +1,181 @@
+# Watchman(파수꾼) Helm 값. 전 구간 read-only — 이 차트가 만드는 권한 중
+# 쓰기(create/update/patch/delete)는 하나도 없고 secrets 읽기도 없다.
+#
+# 최소 설치(키 없이 파이프라인만 확인):
+#   helm install watchman ./deploy/helm/watchman -n watchman --create-namespace \
+#     --set llm.mode=mock --set networkPolicy.apiServerCIDRs='{10.43.0.0/16}'
+
+image:
+  # 앱 코드는 이미지가 아니라 ConfigMap(files/*.py)으로 들어간다 — stdlib-only 라
+  # 공식 파이썬 이미지 그대로 돈다. 사내 미러를 쓰면 repository 만 바꾼다.
+  repository: python
+  tag: "3.12-slim"
+  # 다이제스트가 tag 보다 우선한다. 태그는 위로 움직여서, 노드가 바뀌는 순간 말없이 다른
+  # 빌드를 당겨온다. 기본값은 테스트를 통과한 3.12.14 멀티아키 인덱스(2026-09-24).
+  # 사내 미러면 비우고 미러의 다이제스트를 넣는다.
+  digest: "sha256:2c941e860699f878900b0edc2403613c234d4b32eda3cc9fa7036991a2a63c4a"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+llm:
+  # nim = NVIDIA NIM 실호출 / mock = 외부 호출 없이 결정적 응답(설치 확인용)
+  mode: nim
+  baseUrl: https://integrate.api.nvidia.com/v1
+  model: nvidia/nemotron-3-super-120b-a12b
+  # 429·503·타임아웃이면 순서대로 넘어간다(한도가 모델 단위라 다른 모델은 산다).
+  fallbackModels:
+    - nvidia/nemotron-3-ultra-550b-a55b
+  concurrency: 2
+  maxAttempts: 5
+
+# 비밀값. 권장: 미리 만든 Secret 을 existingSecret 으로 가리킨다(값이 helm 릴리스
+# 기록에 남지 않는다). 키 이름: NVIDIA_API_KEY · ES_PASS · TELEGRAM_BOT_TOKEN
+# · LOKI_PASS · LOKI_TOKEN · DD_API_KEY · DD_APP_KEY (전부 선택).
+secret:
+  existingSecret: ""
+  # create=true 면 아래 값으로 Secret 을 만든다 — 값이 helm 릴리스 Secret 에 평문 저장됨.
+  create: false
+  nvidiaApiKey: ""
+  esPassword: ""
+  telegramBotToken: ""
+  lokiPassword: ""
+  lokiToken: ""
+  datadogApiKey: ""
+  datadogAppKey: ""
+
+# POST /alert 인증. 서버는 0.0.0.0 에 뜨므로 토큰이 없으면 기동을 거부한다(fail-closed).
+# 둘 다 비우면 설치 때 한 번 생성해 <fullname>-webhook Secret 에 두고 업그레이드에도 유지한다.
+# ⚠ ArgoCD 처럼 helm template 으로 렌더하면 lookup 이 안 돼 sync 마다 새로 생성된다 —
+#   그 경우 token 이나 existingSecret 을 반드시 지정할 것.
+webhook:
+  token: ""
+  # 키 이름은 token. 지정하면 위 token 은 무시된다.
+  existingSecret: ""
+
+elasticsearch:
+  # 비우면 es_search 도구가 "미설정" 을 돌려준다(에이전트는 K8s 조사만 한다).
+  url: ""
+  user: ""
+  verifyTLS: true
+  # 자체서명 CA(ECK 등)면 끄지 말고 CA 를 준다: CA 인증서(공개값)를 담은 ConfigMap 이름·키.
+  # ECK 예: kubectl -n <es-ns> get secret <es>-es-http-certs-public -o jsonpath='{.data.ca\.crt}' | base64 -d
+  #   → kubectl -n <ns> create configmap es-ca --from-file=ca.crt=/dev/stdin
+  # url 호스트는 인증서 SAN 과 맞아야 한다 — ECK 는 <es>-es-http.<ns>.svc (…cluster.local 은 SAN 에 없다).
+  caConfigMap: ""
+  caKey: ca.crt
+  # 에이전트가 조회할 수 있는 인덱스 패턴(쉼표). 죽은 인덱스를 열어두면 0건을
+  # "부재의 증거" 로 인용한다 — 실제로 로그가 쌓이는 패턴만 적는다.
+  allowedPatterns: "logstash-*"
+
+# 로그 백엔드. es(기본) = 위 elasticsearch / loki / datadog. es 가 아니면 에이전트는
+# es_search 대신 log_search 도구를 쓴다 — LLM 은 LogQL·Datadog 쿼리를 쓰지 않고
+# namespace·포함 문자열·시간창만 넘기며, 쿼리는 코드가 이스케이프해 조립한다.
+logs:
+  backend: es
+  loki:
+    url: ""                     # 예: http://loki-gateway.monitoring.svc.cluster.local
+    namespaceLabel: namespace   # 네임스페이스를 담은 스트림 라벨(promtail·alloy 기본 namespace)
+    tenant: ""                  # 멀티테넌트면 X-Scope-OrgID
+    user: ""                    # basic 인증 사용자(비번은 Secret 의 LOKI_PASS, 토큰은 LOKI_TOKEN)
+    verifyTLS: true
+  datadog:
+    # api.<site> 로 간다. 키는 Secret 의 DD_API_KEY·DD_APP_KEY(App 키는 logs_read_data 스코프 권장).
+    site: datadoghq.com
+
+kubernetes:
+  apiUrl: https://kubernetes.default.svc
+  # 파드 SA 에 마운트된 클러스터 CA(serviceaccount/ca.crt)로 검증한다. 요청별 CA 라
+  # NIM 등 외부 호출의 공인 CA 검증에는 영향이 없다.
+  verifyTLS: true
+
+telegram:
+  # 비우면 카드를 stdout(kubectl logs)으로만 낸다.
+  chatId: ""
+
+# 공개 관제 호스트. 이 Host 로 온 요청은 읽기 전용(GET /·/view·/state·/healthz).
+publicHost: ""
+# POST /alert 를 받을 Host 허용목록. 서비스 DNS 이름(<svc>, <svc>.<ns>, .svc,
+# .svc.cluster.local)과 localhost 는 차트가 자동으로 넣는다. 여기엔 추가분만.
+extraWriteHosts: []
+clusterDomain: cluster.local
+
+# fingerprint 가 이 접두사로 시작하는 경보는 조사는 하되 카드 전송을 건너뛴다(스모크 테스트용).
+testFingerprintPrefix: "fx-"
+
+# 복구가능성 조사 — velero 메타데이터 읽기(backups·schedules·BSL). velero 가 없으면 끈다.
+recovery:
+  enabled: false
+  veleroNamespace: velero
+
+# 알람 없는 정기 자세 점검(매일 hourKST 시). 카드가 하루 한 장 온다.
+invariants:
+  enabled: false
+  hourKST: 9
+  backupMaxAgeHours: 24
+  rdpPorts: [3389, 3390]
+
+rbac:
+  create: true
+  # RBAC 객체(roles·bindings·serviceaccounts) 읽기 — 이름과 관계뿐, 크리덴셜 값 없음.
+  readRBAC: true
+  # velero.io CRD 읽기. recovery.enabled 와 별개로 CRD 가 없어도 무해하다.
+  readVelero: true
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+service:
+  # ClusterIP 권장. 공개 관제가 필요하면 Ingress/터널을 앞에 두고 publicHost 를 채운다.
+  type: ClusterIP
+  port: 8687
+  nodePort: null
+
+persistence:
+  # 감사로그(audit.jsonl) 영속화. 끄면 emptyDir — 파드 재생성 시 감사기록 소실.
+  enabled: true
+  storageClass: ""
+  size: 1Gi
+  existingClaim: ""
+
+# 이그레스 제한. 켜면 DNS · K8s API · ES · 외부 443 만 열린다.
+networkPolicy:
+  enabled: true
+  # 필수(enabled=true 일 때): K8s API 로 가는 경로의 CIDR.
+  # 서비스망(kubernetes.default.svc ClusterIP)과 apiserver 실주소를 둘 다 적는다.
+  # 예) K3s: 10.43.0.0/16 + 노드망 / EKS: 서비스 CIDR + VPC CIDR
+  apiServerCIDRs: []
+  apiServerPorts: [443, 6443]
+  dns:
+    namespace: kube-system
+    podLabels:
+      k8s-app: kube-dns
+  elasticsearch:
+    enabled: true
+    namespace: logging
+    port: 9200
+  # logs.backend=loki 일 때 Loki 로 가는 길. 클러스터 밖(Grafana Cloud 등)이면 externalHTTPS 로 충분하다.
+  # Datadog 은 외부 443 이라 externalHTTPS 가 켜져 있어야 한다.
+  loki:
+    enabled: false
+    namespace: monitoring
+    port: 3100
+  # NIM·텔레그램. IP 가 고정이 아니라 "사설망 제외 전체 443" 이다(vanilla NetworkPolicy 는
+  # 도메인 단위 제한 불가 — 필요하면 egress 프록시/Cilium FQDN 정책을 쓴다).
+  externalHTTPS: true
+  # 인바리언트 RDP 점검용 노드망 CIDR(TCP 연결 시도만). invariants.enabled 일 때만 쓰인다.
+  invariantCIDRs: []
+
+resources:
+  requests: { cpu: 25m, memory: 64Mi }
+  limits: { cpu: 300m, memory: 256Mi }
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# 위에 없는 환경변수(watchman.py 의 ENV.get 키)를 그대로 넘긴다.
+extraEnv: []

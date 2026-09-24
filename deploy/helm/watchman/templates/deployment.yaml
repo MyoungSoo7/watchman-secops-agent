@@ -1,0 +1,215 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "watchman.fullname" . }}
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+spec:
+  # 단일 인스턴스 전제: 감사로그 PVC(RWO)·경보 중복제거·킬체인 상태가 프로세스 안에 있다.
+  replicas: 1
+  # RWO PVC 를 새/옛 파드가 동시에 못 잡는다 — 교체는 내리고 올린다.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "watchman.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "watchman.selectorLabels" . | nindent 8 }}
+      annotations:
+        # 코드가 바뀌면 파드를 다시 띄운다(ConfigMap 만 바뀌면 파드는 옛 코드를 계속 돈다).
+        checksum/code: {{ include (print $.Template.BasePath "/configmap-code.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "watchman.serviceAccountName" . }}
+      # 서비스 링크가 <SVC>_PORT=tcp://… 를 주입하면 WATCHMAN_PORT 파싱이 깨진다.
+      enableServiceLinks: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: watchman
+        image: {{ include "watchman.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["python", "/app/watchman.py", "serve"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        env:
+        - name: WATCHMAN_HOST
+          value: "0.0.0.0"
+        - name: WATCHMAN_PORT
+          value: {{ .Values.service.port | quote }}
+        - name: WATCHMAN_WEBHOOK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "watchman.webhookSecretName" . }}
+              key: token
+        - name: WATCHMAN_WRITE_HOSTS
+          value: {{ include "watchman.writeHosts" . | quote }}
+        {{- with .Values.publicHost }}
+        - name: WATCHMAN_PUBLIC_HOST
+          value: {{ . | quote }}
+        {{- end }}
+        - name: LLM_MODE
+          value: {{ .Values.llm.mode | quote }}
+        - name: NIM_BASE
+          value: {{ .Values.llm.baseUrl | quote }}
+        - name: NIM_MODEL
+          value: {{ .Values.llm.model | quote }}
+        - name: NIM_FALLBACK_MODELS
+          value: {{ join "," .Values.llm.fallbackModels | quote }}
+        - name: NIM_CONCURRENCY
+          value: {{ .Values.llm.concurrency | quote }}
+        - name: NIM_MAX_ATTEMPTS
+          value: {{ .Values.llm.maxAttempts | quote }}
+        {{- with .Values.elasticsearch.url }}
+        - name: ES_URL
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.elasticsearch.user }}
+        - name: ES_USER
+          value: {{ . | quote }}
+        {{- end }}
+        - name: ES_VERIFY_TLS
+          value: {{ ternary "1" "0" .Values.elasticsearch.verifyTLS | quote }}
+        {{- if .Values.elasticsearch.caConfigMap }}
+        - name: ES_CA_FILE
+          value: /etc/watchman/es-ca/{{ .Values.elasticsearch.caKey }}
+        {{- end }}
+        - name: ES_ALLOWED_PATTERNS
+          value: {{ .Values.elasticsearch.allowedPatterns | quote }}
+        - name: LOG_BACKEND
+          value: {{ .Values.logs.backend | quote }}
+        {{- if eq .Values.logs.backend "loki" }}
+        {{- $l := .Values.logs.loki }}
+        {{- if not $l.url }}
+        {{- fail "logs.loki.url is required when logs.backend=loki" }}
+        {{- end }}
+        - name: LOKI_URL
+          value: {{ $l.url | quote }}
+        - name: LOKI_NAMESPACE_LABEL
+          value: {{ $l.namespaceLabel | quote }}
+        - name: LOKI_VERIFY_TLS
+          value: {{ ternary "1" "0" $l.verifyTLS | quote }}
+        {{- with $l.tenant }}
+        - name: LOKI_TENANT
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with $l.user }}
+        - name: LOKI_USER
+          value: {{ . | quote }}
+        {{- end }}
+        {{- else if eq .Values.logs.backend "datadog" }}
+        - name: DD_SITE
+          value: {{ .Values.logs.datadog.site | quote }}
+        {{- else if ne .Values.logs.backend "es" }}
+        {{- fail "logs.backend must be es, loki or datadog" }}
+        {{- end }}
+        - name: K8S_API
+          value: {{ .Values.kubernetes.apiUrl | quote }}
+        - name: K8S_VERIFY_TLS
+          value: {{ ternary "1" "0" .Values.kubernetes.verifyTLS | quote }}
+        {{- with .Values.telegram.chatId }}
+        - name: TELEGRAM_CHAT_ID
+          value: {{ . | quote }}
+        {{- end }}
+        - name: TEST_FINGERPRINT_PREFIX
+          value: {{ .Values.testFingerprintPrefix | quote }}
+        - name: RECOVERY_ENABLED
+          value: {{ ternary "1" "0" .Values.recovery.enabled | quote }}
+        - name: VELERO_NAMESPACE
+          value: {{ .Values.recovery.veleroNamespace | quote }}
+        - name: INVARIANTS_ENABLED
+          value: {{ ternary "1" "0" .Values.invariants.enabled | quote }}
+        - name: INVARIANTS_HOUR_KST
+          value: {{ .Values.invariants.hourKST | quote }}
+        - name: INVARIANT_BACKUP_MAX_AGE_H
+          value: {{ .Values.invariants.backupMaxAgeHours | quote }}
+        - name: INVARIANT_RDP_PORTS
+          value: {{ join "," .Values.invariants.rdpPorts | quote }}
+        - name: AUDIT_PATH
+          value: /data/audit.jsonl
+        # 루트FS 읽기전용이라 .pyc 를 못 쓴다 / stdout 버퍼링을 꺼야 kubectl logs 에 바로 보인다.
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        {{- with .Values.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with (include "watchman.secretName" .) }}
+        envFrom:
+        - secretRef:
+            name: {{ . }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.port }}
+        livenessProbe:
+          httpGet: { path: /healthz, port: http }
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          failureThreshold: 5
+        readinessProbe:
+          httpGet: { path: /healthz, port: http }
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: code
+          mountPath: /app
+          readOnly: true
+        - name: data
+          mountPath: /data
+        - name: tmp
+          mountPath: /tmp
+        {{- if .Values.elasticsearch.caConfigMap }}
+        - name: es-ca
+          mountPath: /etc/watchman/es-ca
+          readOnly: true
+        {{- end }}
+      volumes:
+      {{- with .Values.elasticsearch.caConfigMap }}
+      - name: es-ca
+        configMap:
+          name: {{ . }}
+      {{- end }}
+      - name: code
+        configMap:
+          name: {{ include "watchman.fullname" . }}-code
+      - name: data
+        {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim | default (printf "%s-audit" (include "watchman.fullname" .)) }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: tmp
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

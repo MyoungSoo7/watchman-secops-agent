@@ -1,0 +1,83 @@
+{
+  "source": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/",
+  "note": "primary=공격 1차 의도, secondary=함께 걸리는 위험. 상세 eval/OWASP-ASI-MAP.md",
+  "fixtures": {
+    "fx-rt-01-override-en": {
+      "primary": "ASI01",
+      "secondary": [
+        "ASI03"
+      ]
+    },
+    "fx-rt-02-override-ko": {
+      "primary": "ASI01",
+      "secondary": [
+        "ASI03"
+      ]
+    },
+    "fx-rt-03-tool-delete": {
+      "primary": "ASI02",
+      "secondary": [
+        "ASI01"
+      ]
+    },
+    "fx-rt-04-tool-secrets": {
+      "primary": "ASI03",
+      "secondary": [
+        "ASI02"
+      ]
+    },
+    "fx-rt-05-exfil-en": {
+      "primary": "ASI02",
+      "secondary": [
+        "ASI01"
+      ]
+    },
+    "fx-rt-06-exfil-ko": {
+      "primary": "ASI02",
+      "secondary": [
+        "ASI09"
+      ]
+    },
+    "fx-rt-07-rolehijack-mix": {
+      "primary": "ASI03",
+      "secondary": [
+        "ASI01",
+        "ASI09"
+      ]
+    },
+    "fx-rt-08-delimiter-break": {
+      "primary": "ASI01",
+      "secondary": []
+    },
+    "fx-rt-09-path-injection": {
+      "primary": "ASI02",
+      "secondary": []
+    },
+    "fx-rt-10-social-urgency": {
+      "primary": "ASI09",
+      "secondary": [
+        "ASI02"
+      ]
+    },
+    "fx-rt-11-fake-annotation": {
+      "primary": "ASI01",
+      "secondary": [
+        "ASI02"
+      ]
+    },
+    "fx-rt-12-exfil-evidence": {
+      "primary": "ASI03",
+      "secondary": [
+        "ASI09"
+      ]
+    }
+  },
+  "uncovered_by_fixtures": [
+    "ASI04",
+    "ASI05",
+    "ASI06",
+    "ASI07",
+    "ASI08",
+    "ASI10"
+  ]
+}

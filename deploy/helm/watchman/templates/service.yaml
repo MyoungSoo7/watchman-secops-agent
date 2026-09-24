@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "watchman.fullname" . }}
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "watchman.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: http
+    port: {{ .Values.service.port }}
+    targetPort: http
+    {{- if and (eq .Values.service.type "NodePort") .Values.service.nodePort }}
+    nodePort: {{ .Values.service.nodePort }}
+    {{- end }}

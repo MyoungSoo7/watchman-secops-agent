@@ -1,0 +1,46 @@
+{
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "reps": 1,
+ "rows": [
+  {
+   "case": "fx-case-01-frpc-restart",
+   "rep": 0,
+   "seconds": 198.3,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "frpc 클라이언트가 상류(frps) 연결 실패로 재시작 반복 — 네트워크/상류 가용성 문제 의심"
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "rep": 0,
+   "seconds": 221.8,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "노드 재부팅/일시적 네트워크 장애로 인한 self-healer 파드 재시작, 자동 복구됨"
+  }
+ ]
+}

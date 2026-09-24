@@ -30,7 +30,8 @@ def load_runs(audit_path):
         if not rid or rid == "server":
             continue
         r = runs.setdefault(rid, {"run_id": rid, "evidence": [], "classification": None,
-                                  "fingerprint": None, "alertname": None, "state": None})
+                                  "fingerprint": None, "alertname": None, "state": None,
+                                  "human_label": None})
         kind = e.get("kind")
         p = e.get("payload", {})
         if kind == "alert_in":
@@ -45,7 +46,18 @@ def load_runs(audit_path):
             r["state"] = r["state"] or "완료"
         elif kind == "error":
             r["state"] = "실패"
+        elif kind == "human_label":
+            r["human_label"] = p.get("label")   # 여러 번 눌렀으면 마지막 것
     return runs
+
+
+def human_label_rate(runs):
+    """카드 👍/👎 로 사람이 단 라벨의 정답률. fx- 픽스처(테스트 알림)는 뺀다.
+    반환: (맞음, 라벨 단 run 수, [(run_id, alertname, label)])"""
+    rows = [(rid, r["alertname"], r["human_label"]) for rid, r in sorted(runs.items())
+            if r["human_label"] in ("correct", "wrong")
+            and not str(r["fingerprint"] or "").startswith("fx-")]
+    return sum(1 for _, _, lb in rows if lb == "correct"), len(rows), rows
 
 
 def match(classification, keywords):
@@ -101,6 +113,18 @@ def main():
     print(f"**분류 정답률(자동, 키워드 OR): {rate}**  ·  라벨 필요(서브에이전트1): {len(pending)}건")
     print("\n> 자동 채점은 키워드 포함 여부다. 최종 정답률은 서브에이전트1의 사람 라벨링(T4-3 교차 확인) 후 확정한다.")
     print("> 미달 수치를 성과로 표시하지 않는다(ROLE.md T4-2).")
+
+    ok, n, rows = human_label_rate(runs)
+    print("\n## 실알림 정답률 — 카드 👍/👎 사람 라벨\n")
+    if not n:
+        print("라벨 0건 — 아직 측정값 없음(수치를 만들지 않는다).")
+        return
+    print("| run_id | alert | 라벨 |")
+    print("|---|---|---|")
+    for rid, an, lb in rows:
+        print(f"| {rid} | {an} | {'👍 맞음' if lb == 'correct' else '👎 틀림'} |")
+    print(f"\n**실알림 정답률(사람 라벨): {ok}/{n} = {100 * ok // n}%**")
+    print("> 표본은 사람이 버튼을 누른 카드뿐이다 — 누르지 않은 카드는 분모에 없다(선택 편향 가능).")
 
 
 if __name__ == "__main__":

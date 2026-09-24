@@ -1,0 +1,63 @@
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "watchman.serviceAccountName" . }}
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- if .Values.rbac.create }}
+---
+# kube_read 도구 권한. 코드 화이트리스트(K8S_RESOURCES)와 짝을 이룬다.
+# 동사는 get/list 뿐이고 secrets·configmaps 는 없다 — 조사 중 크리덴셜 값을 볼 길이 없다.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "watchman.fullname" . }}-readonly
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "events", "services", "persistentvolumeclaims", "nodes"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+  verbs: ["get", "list"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list"]
+{{- if .Values.rbac.readRBAC }}
+# SA→Secret 도달성 판단용. RBAC 객체엔 이름과 관계뿐, 크리덴셜 값이 없다.
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get", "list"]
+{{- end }}
+{{- if .Values.rbac.readVelero }}
+# 백업 메타데이터(이름·시각·상태)만. 권한이 없으면 403 이 "백업이 없다" 로 오독된다.
+- apiGroups: ["velero.io"]
+  resources: ["backups", "schedules", "backupstoragelocations"]
+  verbs: ["get", "list"]
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "watchman.fullname" . }}-readonly
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "watchman.fullname" . }}-readonly
+subjects:
+- kind: ServiceAccount
+  name: {{ include "watchman.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

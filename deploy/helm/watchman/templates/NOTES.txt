@@ -1,0 +1,38 @@
+Watchman(파수꾼) 설치됨 — 모드: {{ .Values.llm.mode }}{{ if eq .Values.llm.mode "mock" }} (외부 LLM 호출 없음, 설치 확인용){{ end }}
+
+1) 상태 확인
+   kubectl -n {{ .Release.Namespace }} rollout status deploy/{{ include "watchman.fullname" . }}
+   kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "watchman.fullname" . }} {{ .Values.service.port }}
+   curl -s localhost:{{ .Values.service.port }}/healthz          # → ok
+   curl -s localhost:{{ .Values.service.port }}/state            # run 집계(읽기 전용)
+
+2) Alertmanager 연결 — receiver 에 webhook 을 추가한다. POST /alert 는 Bearer 토큰이 필수다:
+   receivers:
+   - name: watchman
+     webhook_configs:
+     - url: http://{{ include "watchman.fullname" . }}.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}:{{ .Values.service.port }}/alert
+       send_resolved: false
+       http_config:
+         authorization:
+           type: Bearer
+           credentials_file: /etc/alertmanager/secrets/watchman-webhook/token
+
+   토큰은 Secret {{ include "watchman.webhookSecretName" . }} (키 token) 에 있다. Alertmanager 네임스페이스로
+   같은 값의 Secret 을 만들어 마운트한다(kube-prometheus-stack 이면 alertmanagerSpec.secrets: [watchman-webhook]):
+   kubectl -n {{ .Release.Namespace }} get secret {{ include "watchman.webhookSecretName" . }} -o jsonpath='{.data.token}' | base64 -d \
+     | kubectl -n <alertmanager-ns> create secret generic watchman-webhook --from-file=token=/dev/stdin
+
+   토큰이 없거나 틀리면 401, 서비스 DNS·localhost 외 Host 는 403 이다.
+{{- if not (include "watchman.secretName" .) }}
+
+⚠ Secret 이 연결되지 않았다. llm.mode=nim 이면 NVIDIA_API_KEY 가 필요하다:
+   kubectl -n {{ .Release.Namespace }} create secret generic watchman-secret \
+     --from-literal=NVIDIA_API_KEY=... [--from-literal=ES_PASS=...] [--from-literal=TELEGRAM_BOT_TOKEN=...]
+   helm upgrade {{ .Release.Name }} <chart> --reuse-values --set secret.existingSecret=watchman-secret
+{{- end }}
+{{- if not .Values.telegram.chatId }}
+
+ℹ telegram.chatId 가 비어 있어 제안 카드는 파드 로그(stdout)로만 나온다.
+{{- end }}
+
+권한: get/list 만, secrets 읽기 없음. 자동 조치 없음 — 카드는 제안이다.

@@ -1,0 +1,81 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- $np := .Values.networkPolicy }}
+{{- if not $np.apiServerCIDRs }}
+{{- fail "networkPolicy.apiServerCIDRs is required when networkPolicy.enabled=true (service CIDR + apiserver address, e.g. K3s: 10.43.0.0/16 and the node subnet). Or set networkPolicy.enabled=false." }}
+{{- end }}
+# 이그레스 제한 — 나가는 길을 필요한 곳만 연다. Ingress 는 막지 않는다(Alertmanager 유입).
+# 주의: 외부 443 은 도메인 제한이 아니라 "사설망 제외 전체 443" 이다(vanilla NetworkPolicy 한계).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "watchman.fullname" . }}-egress
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "watchman.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Egress
+  egress:
+  # DNS — 이게 빠지면 모든 이름 해석이 죽는다
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $np.dns.namespace }}
+      podSelector:
+        matchLabels:
+          {{- toYaml $np.dns.podLabels | nindent 10 }}
+    ports:
+    - { protocol: UDP, port: 53 }
+    - { protocol: TCP, port: 53 }
+  # K8s API — 서비스 ClusterIP 와 DNAT 후 apiserver 실주소 둘 다
+  - to:
+    {{- range $np.apiServerCIDRs }}
+    - ipBlock:
+        cidr: {{ . }}
+    {{- end }}
+    ports:
+    {{- range $np.apiServerPorts }}
+    - { protocol: TCP, port: {{ . }} }
+    {{- end }}
+  {{- if $np.elasticsearch.enabled }}
+  # Elasticsearch
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $np.elasticsearch.namespace }}
+    ports:
+    - { protocol: TCP, port: {{ $np.elasticsearch.port }} }
+  {{- end }}
+  {{- if and (eq .Values.logs.backend "loki") $np.loki.enabled }}
+  # Loki (클러스터 내)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $np.loki.namespace }}
+    ports:
+    - { protocol: TCP, port: {{ $np.loki.port }} }
+  {{- end }}
+  {{- if and .Values.invariants.enabled $np.invariantCIDRs }}
+  # 인바리언트 RDP 점검 — TCP 연결 시도만(데이터 송신 없음)
+  - to:
+    {{- range $np.invariantCIDRs }}
+    - ipBlock:
+        cidr: {{ . }}
+    {{- end }}
+    ports:
+    {{- range .Values.invariants.rdpPorts }}
+    - { protocol: TCP, port: {{ . }} }
+    {{- end }}
+  {{- end }}
+  {{- if $np.externalHTTPS }}
+  # NIM·텔레그램 — 사설망·링크로컬 제외 443
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16"]
+    ports:
+    - { protocol: TCP, port: 443 }
+  {{- end }}
+{{- end }}

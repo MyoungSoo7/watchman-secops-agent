@@ -1,0 +1,10 @@
+apiVersion: v2
+name: watchman
+description: >-
+  Watchman(파수꾼) — Alertmanager 경보를 받아 read-only 로 로그·K8s 상태를 조사하고
+  원인 분류와 조치 *제안* 카드를 보내는 SecOps 에이전트. 자동 실행 없음.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [kubernetes, alertmanager, sre, secops, read-only, nvidia-nim]
+home: https://security.lemuel.co.kr

@@ -1,0 +1,27 @@
+{
+ "model": "meta/llama-3.2-11b-vision-instruct",
+ "reps": 1,
+ "rows": [
+  {
+   "case": "fx-case-07-ddak-restart",
+   "rep": 0,
+   "seconds": 108.4,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "PodRestartingTooOften"
+  }
+ ]
+}

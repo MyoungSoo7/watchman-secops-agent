@@ -1,0 +1,17 @@
+{{/* 앱 코드. files/*.py 는 리포 루트 소스로의 심볼릭 링크라 원본이 하나뿐이고,
+     helm package 가 링크를 실파일로 풀어 tgz 에 담는다. */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "watchman.fullname" . }}-code
+  labels:
+    {{- include "watchman.labels" . | nindent 4 }}
+data:
+{{- range $f := list "watchman.py" "chain.py" "invariants.py" "recovery.py" "redact.py" "logsrc.py" }}
+  {{- $body := $.Files.Get (printf "files/%s" $f) }}
+  {{- if not $body }}
+  {{- fail (printf "files/%s is missing from the chart" $f) }}
+  {{- end }}
+  {{ $f }}: |
+{{ $body | indent 4 }}
+{{- end }}

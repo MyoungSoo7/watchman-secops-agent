@@ -1,0 +1,588 @@
+{
+ "model": "nvidia/nemotron-3-super-120b-a12b",
+ "fallback": [
+  "nvidia/nemotron-3-ultra-550b-a55b"
+ ],
+ "ran_at": "2026-09-24T17:50:13+0900",
+ "rows": [
+  {
+   "case": "fx-case-01-frpc-restart",
+   "label": "frpc(리버스 프록시 클라이언트)의 원격 연결 단절로 인한 반복 재시작 — 외부 요인, 파드 자체 결함 아님",
+   "seconds": 55.2,
+   "partial": false,
+   "classification": "frp-prod 네임스페이스의 frpc 파드가 12회 재시작 후 Error 종료했으나 현재 해당 파드와 네임스페이스 내 모든 워크로드가 소멸됨 — 원인 규명 불가",
+   "verdict": "불명",
+   "confidence": "낮음",
+   "evidence": [
+    "알림: frp-frpc-56f6f5499b-zgj4k 파드가 12회 재시작, 마지막 종료 사유 Error (2026-09-17T10:52:02Z)",
+    "kube_read get pods: 해당 파드 404 — 이미 삭제/교체됨",
+    "kube_read list pods/events/jobs/cronjobs: frp-prod 네임스페이스 현재 빈 상태 (워크로드 0개)",
+    "알림 발생 시각(2026-09-22) 대비 종료 시각(2026-09-17) 5일 차이 — 과거 사건",
+    "미확인: 재시작 당시 컨테이너 로그, 이벤트, 디플로이먼트/데몬셋/스테이트풀셋 정의(허용 리소스 외), 종료 시점의 네임스페이스 상태"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "frp-prod",
+      "name": "frp-frpc-56f6f5499b-zgj4k"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "jobs",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "cronjobs",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1
+  },
+  {
+   "case": "fx-case-02-dashboard-restart",
+   "label": "kubernetes-dashboard 재시작 — isagal 노드 불안정과 연관된 것으로 추정",
+   "seconds": 63.3,
+   "partial": false,
+   "classification": "대시보드 파드가 metrics-scraper 측 사이드카와의 연결 오류로 반복적으로 비정상 종료되어 재시작됨",
+   "verdict": "의심",
+   "confidence": "중간",
+   "evidence": [
+    "Pod kubernetes-dashboard-6c7b75ffc-vpss4 상태: restartCount 13, last terminated reason Error at 2026-09-18T12:24:14Z, 현재 phase Running, Ready true",
+    "파드 로그에서 반복적인 metric client health check 실패 기록: 'http2: client connection lost', 'connect: network is unreachable', 'the server is currently unable to handle the request', 'connect: connection refused' 등, 간헐적으로 성공적인 sidecar 요청 존재",
+    "대시보드 메트릭 스크래퍼 Deployment dashboard-metrics-scraper 상태: replicas 1, readyReplicas 1, availableReplicas 1, 조건 Available True",
+    "이름으로 된 Events 리소스가 없음 (API 서버 404) – 파드가 삭제·교체되었거나 단명 워크로드일 수 있음"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard-6c7b75ffc-vpss4"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard-6c7b75ffc-vpss4"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "events",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard-6c7b75ffc-vpss4"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "deployments",
+      "namespace": "kubernetes-dashboard",
+      "name": "dashboard-metrics-scraper"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard-6c7b75ffc-vpss4"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1
+  },
+  {
+   "case": "fx-case-03-heartbeat-flap",
+   "label": "david 노드 재부팅(2026-09-21 13:57)에 동반된 파드 재기동 — 노드 이벤트가 원인",
+   "seconds": 79.0,
+   "partial": false,
+   "classification": "tgbot-heartbeat pod의 스크립트가 프로세스 확인 중 오류를 일으켜 자주 재시작 중이며, 보안 사고는 아님",
+   "verdict": "의심",
+   "confidence": "중간",
+   "evidence": [
+    "Pod tgbot-heartbeat-q2b7q 상태: Running, restartCount 34, lastState terminated exitCode 255 reason Unknown (finishedAt 2026-09-21T13:57:53Z, startedAt 2026-09-21T13:58:02Z)",
+    "컨테이너 로그: /scripts/check-loop.sh: line 33: can't open /proc/2758457/cmdline: no such file 및 /proc/2907065/cmdline: no such file 오류 반복",
+    "네임스페이스 lemuel-monitor의 Event 목록이 비어있어 노드 재부팅이나 인프라 이벤트 흔적 없음",
+    "Pod의 startTime 2026-08-20T17:54:50Z로 오래 실행 중이며, 최근 재시작 간격이 짧아 노드 재부팅과는 무관함"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "lemuel-monitor",
+      "name": "tgbot-heartbeat-q2b7q"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "lemuel-monitor",
+      "name": "tgbot-heartbeat-q2b7q"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "lemuel-monitor"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1
+  },
+  {
+   "case": "fx-case-04-velero-partialfail",
+   "label": "isagal PVB not-ready 로 인한 부분 실패 — velero_daily_backup_partialfail 기록과 일치",
+   "seconds": 46.3,
+   "partial": false,
+   "classification": "Velero backup daily-with-volumes-20260919030028이 PartiallyFailed 상태로 종료되어 하나의 오류와 다수의 경고가 발생함.",
+   "verdict": "사고",
+   "confidence": "중간",
+   "evidence": [
+    "Backup resource shows phase: PartiallyFailed, errors: 1, warnings: 267, itemsBackedUp: 6731 equals totalItems: 6731.",
+    "Annotation: \"Suspected isagal PVB not-ready.\"",
+    "Velero deployment status: Available=True, Progressing=True.",
+    "Pod named 'velero' not found (404), but deployment indicates pods exist (likely velero-*).",
+    "Event list in velero namespace shows only kopia maintain job events, no recent error events related to the backup."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "backups",
+      "namespace": "velero",
+      "name": "daily-with-volumes-20260919030028"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "velero",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "velero",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "velero",
+      "name": "velero"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "deployments",
+      "namespace": "velero",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0
+  },
+  {
+   "case": "fx-case-05-ksm-restart",
+   "label": "노드 자원 압박 하 kube-state-metrics 재시작 — 파드 결함 아님",
+   "seconds": 89.5,
+   "partial": false,
+   "classification": "kube-state-metrics pod이 자주 재시작 중이나 현재는 정상 실행 상태이며 원인은 미확인",
+   "verdict": "의심",
+   "confidence": "중간",
+   "evidence": [
+    "Pod kps-kube-state-metrics-5fd9c99746-klnbh 상태: Running, Ready true, restartCount 11.",
+    "마지막 종료된 컨테이너: exitCode 255, reason Unknown, startedAt 2026-09-21T13:40:43Z, finishedAt 2026-09-21T13:57:53Z; 현재 컨테이너 startedAt 2026-09-21T13:58:05Z.",
+    "노드 david의 MemoryPressure 조건은 False이며 마지막 전환 시간은 2026-09-21T13:57:55Z로, 현재 메모리 압박 없음.",
+    "현재 pod 로그에서는 v1 Endpoints 사용 경고만 반복될 뿐 오류 흔적 없음.",
+    "모니터링 네임스페이스의 최근 이벤트에서는 해당 pod과 관련된 OOMKILL이나 노드 압박 징후 없음."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "monitoring",
+      "name": "kps-kube-state-metrics-5fd9c99746-klnbh"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "monitoring",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "namespace": "",
+      "name": "david"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "monitoring",
+      "name": "kps-kube-state-metrics-5fd9c99746-klnbh"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "monitoring",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "label": "노드 재부팅 시 daemonset 재기동 — 정상 복구 동작",
+   "seconds": 73.0,
+   "partial": false,
+   "classification": "node-self-healer pod 재시작은 노드 재부팅과 관련되어 있으며 현재 정상 동작 중",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "Pod node-self-healer-wcgnz status: Running, restartCount 4, last termination at 2026-09-21T13:57:53Z with exitCode 255 (Unknown), current start at 2026-09-21T13:58:03Z",
+    "Node david status: Ready, no Memory/Disk/PID pressure, conditions show KubeletReady since 2026-09-21T13:57:55Z",
+    "Pod logs show repeated '[BOOT] 최근 재부팅 X초 전 — 위 체크 이상은 부팅 수렴 과정일 수 있다' indicating the self-healer script detected a recent node reboot and noted checks may be due to boot convergence",
+    "Alert annotation: 'node-self-healer daemonset pod restarted 4 times, last 80m ago; correlates with node reboot.' matches observed restart count and timing"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "kube-system",
+      "name": "node-self-healer-wcgnz"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "name": "david"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "kube-system",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "kube-system",
+      "name": "node-self-healer-wcgnz"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0
+  },
+  {
+   "case": "fx-case-07-ddak-restart",
+   "label": "david 노드 재부팅 동반 재기동 — 노드 이벤트가 원인",
+   "seconds": 54.5,
+   "partial": false,
+   "classification": "ddak-app pod이 반복적으로 비정상 종료되어 재시작 중이며, 노드 메모리 압력 시점과 일치하여 OOM kill 가능성 의심",
+   "verdict": "의심",
+   "confidence": "중간",
+   "evidence": [
+    "Pod ddak-app-6b5654dc56-5dssf의 restartCount = 4, 마지막 terminated 상태는 exitCode 255, reason Unknown (2026-09-21T13:57:53Z)",
+    "노드 david의 MemoryPressure 조건이 2026-09-21T13:57:55Z에 False로 전이됨 (직전 True 상태였음), 이는 해당 시점에 메모리 압력이 있었음을 나타냄",
+    "현재 pod 상태는 Running, Ready=true, 컨테이너는 정상 시작됨 (시작 시각 2026-09-21T13:58:04Z)",
+    "네임스페이스 ddak-prod에서 events 목록이 비어있어 kube-system 수준의 오류 이벤트 없음",
+    "Deployment ddak-app은 desired/replicas=1, availableReplicas=1, 조건 Progressing 및 Available 모두 True로 정상 배포 상태"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "ddak-prod",
+      "name": "ddak-app-6b5654dc56-5dssf"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "ddak-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "deployments",
+      "namespace": "ddak-prod",
+      "name": "ddak-app"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "ddak-prod",
+      "name": "ddak-app-6b5654dc56-5dssf"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "name": "david"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0
+  },
+  {
+   "case": "fx-case-08-nonexistent-job",
+   "label": "존재하지 않는 Job — 이미 완료/정리되어 stale 경보",
+   "seconds": 39.5,
+   "partial": false,
+   "classification": "해당 이름의 Job 또는 CronJob이 현재 클러스터에 존재하지 않아 실패 여부를 확인할 수 없음.",
+   "verdict": "불명",
+   "confidence": "낮음",
+   "evidence": [
+    "Job settlement-prod/report-cron-nonexistent-999 not found (API 404).",
+    "CronJob settlement-prod/report-cron-nonexistent-999 not found (API 404).",
+    "Namespace settlement-prod events list shows no event containing the job name.",
+    "Elasticsearch log query failed due to certificate error, so no log evidence obtained."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "jobs",
+      "namespace": "settlement-prod",
+      "name": "report-cron-nonexistent-999"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "cronjobs",
+      "namespace": "settlement-prod",
+      "name": "report-cron-nonexistent-999"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "settlement-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "cronjobs",
+      "namespace": "settlement-prod",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0
+  },
+  {
+   "case": "fx-case-09-nonexistent-pod",
+   "label": "존재하지 않는 파드 — 오탐/조작 의심 경보",
+   "seconds": 40.2,
+   "partial": false,
+   "classification": "스파타-프로드 네임스페이스에서 ghost-pod-does-not-exist 파드 및 관련 워크로드·이벤트가 관측되지 않아 crash looping 증거를 확인하지 못함.",
+   "verdict": "불명",
+   "confidence": "낮음",
+   "evidence": [
+    "kube_read pods in namespace sparta-prod returned empty list (0 items).",
+    "kube_read events in namespace sparta-prod returned empty list.",
+    "kube_read deployments in namespace sparta-prod returned empty list.",
+    "kube_read jobs in namespace sparta-prod returned empty list.",
+    "es_search for 'ghost-pod-does-not-exist' in logstash-* indices failed due to SSL certificate verification error, so log data could not be retrieved."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "sparta-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "sparta-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "deployments",
+      "namespace": "sparta-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "jobs",
+      "namespace": "sparta-prod",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0
+  },
+  {
+   "case": "fx-case-10-nodenotready-stale",
+   "label": "solomon 은 현재 Ready — stale 경보(노드는 Ready인데 광고 IP 등 과거 상태 잔존 가능)",
+   "seconds": 80.2,
+   "partial": false,
+   "classification": "오탐",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "Node solomon의 Ready 조건이 True이며, 마지막 heartbeat는 2026-09-24T08:47:09Z로 최근이다.",
+    "Node의 모든 압력 조건(MemoryPressure, DiskPressure, PIDPressure)이 False이며, 마지막 전환 시간은 2026-09-18T08:22:50Z로 오래전이다.",
+    "default 네임스페이스에서 노드와 관련된 NotReady 또는 장애를 나타내는 이벤트가 전혀 존재하지 않는다.",
+    "알림의 startsAt은 2026-09-22T00:00:00Z이지만, 현재 노드 상태는 이미 2026-09-18부터 Ready 상태를 유지하고 있어 알림이 오래된(스테일) 상태임을 시사한다."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "namespace": "",
+      "name": "solomon"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "default",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1
+  }
+ ]
+}

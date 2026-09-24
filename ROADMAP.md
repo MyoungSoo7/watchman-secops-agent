@@ -1,6 +1,7 @@
 # ROADMAP.md — 9/27(일) 제출 프로토타입 로드맵
 
-> 기간: **2026-09-21(월) ~ 09-27(일), 7일.** 3인 파트타임 전제.
+> 기간: **2026-09-21(월) ~ 09-27(일), 7일.** 3인 파트타임 전제. 공식 제출은 **9/28 온라인 신청서**
+> (P7 확정). 9/27 은 내부 완성 목표다.
 > 원칙: **이미 돌아가는 것(E2E)을 깎지 않는다.** 새 기능은 컷라인 아래로만 추가하고,
 > 막히면 그 자리에서 Stretch 로 강등한다 — 마감이 스코프를 이긴다.
 
@@ -10,6 +11,24 @@
 read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC 경계·화이트리스트
 거부·주입 픽스처까지 실측 완료 (SPEC M0·M1·M1.5 ✅). 남은 7일은 이걸
 **"제출물"로 포장 + 보안통제 마무리 + 보이게 만들기**에 쓴다.
+
+## 0.1 진행 현황 (2026-09-24 갱신)
+
+| 항목 | 상태 | 증거 |
+|---|---|---|
+| P1 이그레스·컨테이너 강화 | ✅ | `eval/CONTROL-MATRIX.md` ③⑥, `eval/evidence-P1-P2-P3-S2.md` |
+| P2 주입 ⚠ 표기 | ✅ | CONTROL-MATRIX ① (fx-rt-01 라이브, `injection_suspects=2`) |
+| P3 `GET /state` | ✅ | evidence-P1-P2-P3-S2 |
+| P4 평가 | ✅ (한계 명시) | 파이프라인 `eval/REPORT.md` · **실알림 블라인드 채점** `eval/real-alerts-20260924.md` |
+| P5 레드팀 | ✅ 코드층 12/12 · LLM 거부층 라이브 지시 수행 0/12(완주 11) | `eval/REDTEAM.md` §3 |
+| P6 제출 패키지 | 문서 ✅ · 데모 영상은 사용자 담당 | `SUBMISSION.md` |
+| P7 공식 요건 | ✅ 확정(9/22 팀 브리핑) | §1.1 |
+| S1 관제 뷰 | 웹 프로토 ✅ (Unity 대신 단일 HTML) | `web/console-map.html`, `web/DEMO.md` |
+| S2 감사로그 PVC | ✅ | helm-deploy `pvc-watchman-audit.yaml`, `AUDIT_PATH=/data/audit.jsonl` |
+| S3 카드 카피 | 부분 — 증거 커버리지·동결 지시·신고 기한 추가(fc82272) | — |
+| Falco 런타임 탐지 | ✅ **실배포**(STRETCH 에서 승격) — 6노드 DaemonSet + falcosidekick → Alertmanager → watchman | helm-deploy `argocd-applications/falco.yaml` |
+| NVIDIA 안전 가드 2차 판정 | ✅ 비차단 판정만 | `eval/guard-20260924.md` |
+| NIM 과부하 대응 | ✅ 동시성 제한·백오프(90c5b53) + 모델 폴백 | `SUBMISSION.md` 정직 고지 #7 |
 
 ## 1. 컷라인
 
@@ -32,7 +51,7 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
 >
 > **실증(공개·재현 가능):** Watchman 의 read-only 트리아지 계약을 **NVIDIA Skill 로 패키징**해 공식 SkillEvaluator Tier-1 을 **통과**시켰다 — `PASS · exit 0`, 검증기 6개 0 errors, Quality **97.8/100 grade A**. 산출물: `skills/watchman-secops-triage/`(SKILL.md·evals/·references/·`reports/` 원문 JSON), 커밋 7b83cc1.
 >
-> **여전히 미확정(정직):** 위는 Skills *제품/생태계*가 공개임을 1차로 확인한 것이고, Watchman 이 그 공식 검증기를 통과함도 실증했다. 그러나 **NVIDIA "챌린지" 대회 자체가 "Skill 제출을 필수로 요구하는지", 심사 4축·9/28 제출 양식·마감 시각**은 이 공개 출처들이 말해주지 않는다 — 그 부분은 여전히 2차 정보이며 서브에이전트1의 안내 원문 대조가 남아 있다.
+> **여전히 미확정(정직)** *(→ 아래 "P7 확정(2026-09-22)" 으로 해소됨. 기록으로 남긴다)*: 위는 Skills *제품/생태계*가 공개임을 1차로 확인한 것이고, Watchman 이 그 공식 검증기를 통과함도 실증했다. 그러나 **NVIDIA "챌린지" 대회 자체가 "Skill 제출을 필수로 요구하는지", 심사 4축·9/28 제출 양식·마감 시각**은 이 공개 출처들이 말해주지 않는다 — 그 부분은 여전히 2차 정보이며 서브에이전트1의 안내 원문 대조가 남아 있다.
 >
 > **선제 대비 완료:** `skill_query` 어댑터(동일 NIM `/chat/completions` 호출, 별도 Skill API 제품 아님)를 **기본 OFF 게이트**로 심어둠(watchman 4fb4c45, helm-deploy 061797a). 켠 상태(`NVIDIA_SKILL_ENABLED=1`)에서 **실호출 1건까지 감사로그 `skill_call`(엔드포인트·토큰)로 확보**(`eval/skill-call-20260922.jsonl`, `eval/NVIDIA-USAGE.md` §3). 그 호출은 검증된 NIM 엔드포인트를 향하며, env 3줄로 공식 엔드포인트 교체 가능(코드 무변경).
 
@@ -80,7 +99,8 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
   velero·R2 백업 자체 보강과 묶어서 한다. 제출본은 UNKNOWN 을 정직 표기한 상태로 낸다.
 - Quest VR 빌드, ESP32 물리 상태등 (FR-17)
 - M3 승인 게이트 실행기
-- NeMo Guardrails 비교 검토
+- NeMo Guardrails 비교 검토 — *부분:* NVIDIA 안전 가드 모델을 주입 2차 판정으로 붙였다
+  (`eval/guard-20260924.md`, 비차단). NeMo Guardrails 프레임워크(레일 정의) 자체와의 비교는 미실시.
 - **런타임 위협 트리아지 — 웹셸/RCE 클래스 (Falco 연동).** 2025 롯데카드 사고(온라인
   결제 WAS 침입 → 웹셸 설치, `CVE-2017-10271` 웹로직 RCE)와 동일 유형을 방어 대상으로
   다룬다. Falco 런타임 룰(웹서버 프로세스의 셸 spawn·웹 도큐먼트 루트 하위 쓰기·비정상
@@ -90,8 +110,11 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
     + 룰 매핑·근거 문서 [`docs/falco-webshell-rce-triage.md`](docs/falco-webshell-rce-triage.md)
     (1차 출처: 금융위 보도자료·NVD·금융보안원). mock 파이프라인 **완주 실측**(주입 오탐 0,
     finish 스키마 유효, evidence 1).
-  - **아직 안 된 것:** 클러스터에 Falco+falcosidekick 실배포 및 Alertmanager 라우팅 실배선,
-    실 웹셸 재현 환경 라이브 트리아지·라벨링. → 프로토타입 제출 범위 밖(STRETCH).
+  - **된 것(운영, 2026-09-22~):** Falco(modern_ebpf, 6노드 DaemonSet) + falcosidekick →
+    Alertmanager → Watchman 실배선. 실 Falco 알림을 매일 트리아지 중이고, 그 판정을 블라인드
+    라벨로 채점했다(`eval/real-alerts-20260924.md` — 정상 알림 오탐 판정 27/37, '사고' 오판 0/37).
+  - **아직 안 된 것:** 실 웹셸 재현 환경에서의 라이브 트리아지. 실알림 표본에 진짜 악성 알림이 0건이라
+    탐지(민감도) 쪽은 아직 재지 못했다. → STRETCH.
 - **자격증명 탈취·남용 트리아지 — GitHub 마스터키 클래스 (감사로그 연동).** 2026-06
   데이원컴퍼니(패스트캠퍼스) 사고(GitHub 마스터 계정 키 탈취 → 5/9 침입 → 6/8 인지, **약
   30일 미탐지**)와 동일 유형을 방어 대상으로 다룬다. 정직한 경계: **키 유출 자체(예방層:
@@ -165,13 +188,13 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
       하네스(`run_chain`/`run_egress`/`run_recovery`/`run_invariants`) + 단위테스트 17개.
       **자동 격리·자동 실행은 넣지 않았다** — 전 구간 read-only 계약을 깨지 않는다.
 - [ ] 실알림 E2E 데모 증거 (GIF 또는 감사로그+카드 스크린샷)
-- [ ] 보안통제 6축 각각의 **실측 증거** (403 로그, 차단 로그, ⚠ 카드, 감사로그 발췌)
-- [ ] 평가 리포트 (정답률 표 + 레드팀 결과표)
+- [x] 보안통제 6축 각각의 **실측 증거** (403 로그, 차단 로그, ⚠ 카드, 감사로그 발췌) — `eval/CONTROL-MATRIX.md`
+- [x] 평가 리포트 (정답률 표 + 레드팀 결과표) — REPORT·real-alerts-20260924·REDTEAM
 - [ ] SPEC.md / ROLE.md / ROADMAP.md 최신화
-- [ ] (S1 성공 시) 관제 뷰 녹화
+- [ ] (S1 성공 시) 관제 뷰 녹화 — 뷰는 있음(`web/DEMO.md` 녹화 가이드), 녹화는 사용자 담당
 - [x] Skills 생태계 실체 확인 + Watchman 을 공식 SkillEvaluator 로 검증(P7 부분완료, 7b83cc1)
-- [ ] §1.1 공식 요건 확인표 완료 (P7 잔여) — 교육 이수 3인 상태, *챌린지의 Skill 제출 필수 여부*, 제출 양식·**9/28 마감 시각**
-- [ ] NVIDIA 실행 기록 표 (run 별 모델 ID·호출 수·토큰·소요 시간 — `/state` 집계 발췌)
+- [x] §1.1 공식 요건 확인표 완료 (P7) — 9/22 팀 브리핑으로 확정: 자유 주제, 9/28 온라인 신청서, 지정교육 수료
+- [x] NVIDIA 실행 기록 표 (run 별 모델 ID·호출 수·토큰·소요 시간 — `/state` 집계 발췌) — `eval/NVIDIA-USAGE.md`
 - [ ] 제출처 형식 요건 확인 — **제출처가 공개 리포를 요구하는지 확인 필요** (현재 private. 공개 전환 시 내부 IP·chat_id 노출 점검 먼저)
 
 ## 4. 리스크

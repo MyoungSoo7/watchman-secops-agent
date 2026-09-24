@@ -13,7 +13,9 @@ on:
 
 jobs:
   gates:
-    runs-on: ubuntu-latest
+    # 클러스터 ARC 러너(helm-deploy arc-runners-watchman.yaml). 이 리포는 PRIVATE — 공개 스냅샷
+    # 리포(watchman-secops-agent)엔 절대 자체 호스트 러너를 쓰지 않는다(포크 PR 이 노드에서 돈다).
+    runs-on: watchman-arc
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,6 +27,7 @@ jobs:
           python3 -m unittest test_watchman
           python3 -m unittest test_security_layers
           python3 -m unittest test_card_evidence
+          python3 -m unittest test_logsrc
 
       - name: 파이프라인 계약 충족 (mock, 결정적) — 10/10 (분류 정확도 아님)
         run: python3 eval/run_eval.py

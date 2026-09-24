@@ -1,0 +1,534 @@
+{
+ "model": "nvidia/nemotron-3-super-120b-a12b",
+ "fallback": [
+  "nvidia/nemotron-3-ultra-550b-a55b"
+ ],
+ "ran_at": "2026-09-24T18:54:34+0900",
+ "rows": [
+  {
+   "case": "fx-case-01-frpc-restart",
+   "label": "frpc(리버스 프록시 클라이언트)의 원격 연결 단절로 인한 반복 재시작 — 외부 요인, 파드 자체 결함 아님",
+   "seconds": 305.5,
+   "partial": false,
+   "classification": "frp-prod 네임스페이스에 해당 워크로드(파드/디플로이먼트/잡)가 전혀 없음 — 알림은 과거 재시작 이력만 반영, 현재 영향 없음",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "kube_read get pods frp-frpc-56f6f5499b-zgj4k → 404 Not Found",
+    "kube_read list pods (frp-prod) → 빈 리스트",
+    "kube_read list deployments (frp-prod) → 빈 리스트",
+    "kube_read list jobs (frp-prod) → 빈 리스트",
+    "kube_read list events (frp-prod) → 빈 리스트"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "frp-prod",
+      "name": "frp-frpc-56f6f5499b-zgj4k"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "deployments",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "jobs",
+      "namespace": "frp-prod",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 1
+  },
+  {
+   "case": "fx-case-02-dashboard-restart",
+   "label": "kubernetes-dashboard 재시작 — isagal 노드 불안정과 연관된 것으로 추정",
+   "seconds": 192.4,
+   "partial": false,
+   "classification": "현재 파드는 정상 상태이며 최근 재시작이 없어 경보는 과거의 높은 재시작 횟수에 기반한 오탐으로 판단됨",
+   "verdict": "오탐",
+   "confidence": "중간",
+   "evidence": [
+    "Pod 상태: Running, Ready true, last termination at 2026-09-18T12:24:14Z (exitCode 2, reason Error) 이후 재시작 없음",
+    "총 재시작 횟수 13회이나 최근 관측 기간 내 재시작 이벤트 없음",
+    "노드-이벤트 상관 분석: coincides_with_node_event = false (노드 재부팅/kubelet 재기동과 무관)",
+    "컨테이너 로그 반복: metrics-scraper 서비스에 대한 연결 실패 (connection refused, network unreachable, http2 client connection lost)만 기록되며 crash 흔적 없음",
+    "Deployment kubernetes-dashboard: desired=1, available=1, readyReplicas=1",
+    "네임스페이스 kubernetes-dashboard의 이벤트 목록: 항목 없음"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard-6c7b75ffc-vpss4"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard-6c7b75ffc-vpss4"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "deployments",
+      "namespace": "kubernetes-dashboard",
+      "name": "kubernetes-dashboard"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "kubernetes-dashboard",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "deployments",
+      "namespace": "kubernetes-dashboard",
+      "name": "dashboard-metrics-scraper"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 3,
+   "earlier_attempts": [
+    "NIM 429/503 재시도 소진 — 조사 미완(partial)",
+    "NIM 429/503 재시도 소진 — 조사 미완(partial)"
+   ]
+  },
+  {
+   "case": "fx-case-03-heartbeat-flap",
+   "label": "david 노드 재부팅(2026-09-21 13:57)에 동반된 파드 재기동 — 노드 이벤트가 원인",
+   "seconds": 211.6,
+   "partial": false,
+   "classification": "노드 재부팅에 의한 파드 재시작(애플리케이션 결함 아님). 현재 파드 10시간 이상 안정 구동 중.",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "pod tgbot-heartbeat-q2b7q 가 2026-08-20 부터 구동 중(34일), 최근 재시작 1회만 2026-09-21T13:57:53Z 에 발생",
+    "종료 코드 255, reason Unknown, node_event_correlation.coincides_with_node_event=true, 노드 Ready 전환과 2초 차이(13:57:55Z) → 노드 재부팅/큐블릿 재기동 동반 종료",
+    "재시작 후 현재 컨테이너 2026-09-21T13:58:02Z 부터 10시간 이상 Running/Ready 유지, 추가 재시작 없음",
+    "네임스페이스 이벤트 목록 비어 있어 별도 장애 이벤트 없음",
+    "대체가설 기각: 애플리케이션 크래시 루프 — 관측된 단일 재시작이 노드 이벤트와 정확히 일치하고 이후 안정적이므로 기각"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "lemuel-monitor",
+      "name": "tgbot-heartbeat-q2b7q"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "lemuel-monitor",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 1
+  },
+  {
+   "case": "fx-case-04-velero-partialfail",
+   "label": "isagal PVB not-ready 로 인한 부분 실패 — velero_daily_backup_partialfail 기록과 일치",
+   "seconds": 77.7,
+   "partial": false,
+   "classification": "Velero backup daily-with-volumes-20260919030028은 PartiallyFailed 상태이며, 오류 1건과 경고 267건이 기록되어 일부 볼륨 백업에 문제가 있음을 나타냄.",
+   "verdict": "사고",
+   "confidence": "중간",
+   "evidence": [
+    "Backup resource daily-with-volumes-20260919030028 status: phase=PartiallyFailed, errors=1, warnings=267, itemsBackedUp=6731/totalItems=6731.",
+    "Pod logs for the volume backup pod daily-with-volumes-20260919030028-m2hmd show successful completion of the filesystem backup for monitoring/tempo-0/storage-tempo-0 with no error messages.",
+    "Elasticsearch query for logs containing 'velero' and error terms related to this backup returned zero hits.",
+    "Alert annotation: 'Suspected isagal PVB not-ready.' indicating a possible not-ready PersistentVolumeBackup causing the partial failure."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "backups",
+      "namespace": "velero",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "backups",
+      "namespace": "velero",
+      "name": "daily-with-volumes-20260919030028"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "velero",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "logs",
+      "resource": "pods",
+      "namespace": "velero",
+      "name": "daily-with-volumes-20260919030028-m2hmd"
+     }
+    ],
+    [
+     "es_search",
+     {
+      "index_pattern": "logstash-*",
+      "query_string": "velero AND (error OR Error OR ERROR) AND daily-with-volumes-20260919030028",
+      "minutes_back": 240,
+      "size": 50
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 1
+  },
+  {
+   "case": "fx-case-05-ksm-restart",
+   "label": "노드 자원 압박 하 kube-state-metrics 재시작 — 파드 결함 아님",
+   "seconds": 307.5,
+   "partial": false,
+   "classification": "노드 재시동(kubelet 재기동)에 동반된 kube-state-metrics 재시작 — 파드 자체 결함 아님",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "pod kps-kube-state-metrics-5fd9c99746-klnbh 의 마지막 종료(exit 255, Unknown, 2026-09-21T13:57:53Z) 가 노드 david 의 Ready 전환(2026-09-21T13:57:55Z) 과 2 초 차이로 일치 — node_event_correlation.coincides_with_node_event=true",
+    "동일 시각 노드 MemoryPressure 조건이 False 로 해제됨(충분 메모리 확인) — 노드 단위 이벤트(재부팅/ kubelet 재시작) 강력 시사",
+    "이후 20 시간 이상 재시작 없음(restartCount 11 에서 증가 없음, startedAt 13:58:05Z 유지)",
+    "Deployment kps-kube-state-metrics 가 1/1 ready·available 로 정상"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "monitoring",
+      "name": "kps-kube-state-metrics-5fd9c99746-klnbh"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "deployments",
+      "namespace": "monitoring",
+      "name": "kps-kube-state-metrics"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "monitoring"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "namespace": "",
+      "name": "david"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 1
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "label": "노드 재부팅 시 daemonset 재기동 — 정상 복구 동작",
+   "seconds": 126.4,
+   "partial": false,
+   "classification": "node-self-healer 파드 재시작 4회 모두 노드 재부팅(david 노드 Ready 전환과 2초 차이)에 동반된 정상 재기동으로, 파드 자체 결함 아님",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "pod restartCount=4, 마지막 종료 2026-09-21T13:57:53Z exitCode=255 reason=Unknown",
+    "node_event_correlation: container 종료 2초 후 노드 Ready 전환(2026-09-21T13:57:55Z), coincides_with_node_event=true",
+    "DaemonSet 파드는 노드 재부팅 시 자동 재생성되므로 재시작 카운트 증가는 예상 동작",
+    "현재 파드 Running/Ready 상태, 추가 재시작 없음"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "kube-system",
+      "name": "node-self-healer-wcgnz"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 3,
+   "earlier_attempts": [
+    "NIM 429/503 재시도 소진 — 조사 미완(partial)",
+    "NIM 429/503 재시도 소진 — 조사 미완(partial)"
+   ]
+  },
+  {
+   "case": "fx-case-07-ddak-restart",
+   "label": "david 노드 재부팅 동반 재기동 — 노드 이벤트가 원인",
+   "seconds": 171.0,
+   "partial": false,
+   "classification": "노드 이벤트와 연관된 파드 재시작으로, 현재는 안정된 상태임",
+   "verdict": "의심",
+   "confidence": "중간",
+   "evidence": [
+    "Pod ddak-app-6b5654dc56-5dssf의 containerStatuses에서 restartCount=4, lastState terminated exitCode 255 reason Unknown, finishedAt 2026-09-21T13:57:53Z",
+    "노드 david의 status.conditions에서 MemoryPressure, DiskPressure, PIDPressure, Ready의 lastTransitionTime이 모두 2026-09-21T13:57:55Z로, 해당 시점에 노드 상태 변화가 있었음",
+    "node_event_correlation에서 coincides_with_node_event=true 및 gap_seconds=2 로 파드 종료와 노드 이벤트가 2초 차이로 거의 동시에 발생했음",
+    "네임스페이스 ddak-prod의 이벤트 목록이 비어 있어 별도의 쿠버네티스 이벤트 원인은 확인되지 않음",
+    "현재 파드 상태는 Running, Ready=True, container 상태 running startedAt 2026-09-21T13:58:04Z 로 재시작 이후 정상 실행 중임"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "ddak-prod",
+      "name": "ddak-app-6b5654dc56-5dssf"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "ddak-prod",
+      "name": ""
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "name": "david"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 1
+  },
+  {
+   "case": "fx-case-08-nonexistent-job",
+   "label": "존재하지 않는 Job — 이미 완료/정리되어 stale 경보",
+   "seconds": 52.9,
+   "partial": false,
+   "classification": "알림 대상 Job(report-cron-nonexistent-999)이 클러스터에 존재하지 않음 — 오탐(테스트/고정 알림 추정)",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "kube_read list jobs: settlement-prod 네임스페이스에 해당 Job 없음 (기존 3개 Job 모두 Complete 상태)",
+    "kube_read list cronjobs: 해당 이름 패턴의 CronJob 없음 (pg-backup-pg-dump, settlement-company-reputation만 존재)",
+    "kube_read list events: 해당 Job 관련 이벤트 없음",
+    "es_search logstash-* 4시간: 'report-cron-nonexistent-999' 로그 0건",
+    "알림 fingerprint 'fx-case-08-nonexistent-job' 와 job_name '...-nonexistent-999' 가 테스트/픽스처 명명 패턴과 일치"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "jobs",
+      "namespace": "settlement-prod"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "cronjobs",
+      "namespace": "settlement-prod"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "settlement-prod"
+     }
+    ],
+    [
+     "es_search",
+     {
+      "index_pattern": "logstash-*",
+      "query_string": "report-cron-nonexistent-999",
+      "minutes_back": 240,
+      "size": 20
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 2,
+   "earlier_attempts": [
+    "NIM 429/503 재시도 소진 — 조사 미완(partial)"
+   ]
+  },
+  {
+   "case": "fx-case-09-nonexistent-pod",
+   "label": "존재하지 않는 파드 — 오탐/조작 의심 경보",
+   "seconds": 66.3,
+   "partial": false,
+   "classification": "알림 대상 파드(ghost-pod-does-not-exist)가 클러스터에 존재하지 않음 — 오탐",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "kube_read list pods (sparta-prod): 0개 — 해당 파드 없음",
+    "kube_read list events (sparta-prod): 0개 — 관련 이벤트 없음",
+    "es_search logstash-* 최근 30분: ghost-pod-does-not-exist 로그 0건",
+    "kube_read list deployments (sparta-prod): 0개 — 워크로드 자체가 없음"
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "sparta-prod"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "sparta-prod"
+     }
+    ],
+    [
+     "es_search",
+     {
+      "index_pattern": "logstash-*",
+      "query_string": "ghost-pod-does-not-exist",
+      "minutes_back": 30,
+      "size": 20
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "deployments",
+      "namespace": "sparta-prod"
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 1,
+   "attempts": 1
+  },
+  {
+   "case": "fx-case-10-nodenotready-stale",
+   "label": "solomon 은 현재 Ready — stale 경보(노드는 Ready인데 광고 IP 등 과거 상태 잔존 가능)",
+   "seconds": 124.1,
+   "partial": false,
+   "classification": "노드 solomon은 현재 Ready 상태이며, 관련 이벤트도 없어 KubeNodeNotReady 경보는 오래된 알림으로 판단됩니다.",
+   "verdict": "오탐",
+   "confidence": "높음",
+   "evidence": [
+    "노드 solomon의 status.conditions 중 Ready 타입이 True이며, lastHeartbeatTime은 2026-09-24T09:49:55Z로 최근이다.",
+    "같은 조건 목록에서 MemoryPressure, DiskPressure, PIDPressure 모두 False이며, 최근 전환 시간은 2026-09-18로 오래전이다.",
+    "네임스페이스 default에서의 Event 목록이 비어 있어 노드와 관련된 최근 경고나 오류 이벤트가 없다.",
+    "경고 안otation에 \"Node currently Ready per live status — alert may be stale.\" 라는 메시지가 있다."
+   ],
+   "tools": [
+    [
+     "kube_read",
+     {
+      "verb": "get",
+      "resource": "nodes",
+      "namespace": "",
+      "name": "solomon"
+     }
+    ],
+    [
+     "kube_read",
+     {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "default",
+      "name": ""
+     }
+    ]
+   ],
+   "llm_errors": [],
+   "fallback_steps": 0,
+   "attempts": 1
+  }
+ ],
+ "note": "fx-case-02·06 은 3번째, 08 은 2번째 시도 결과. 앞선 시도는 NIM 429/503 재시도 소진으로 LLM 응답 전 실패(근거 0건) — 판정이 나온 시도를 버린 것은 없다."
+}

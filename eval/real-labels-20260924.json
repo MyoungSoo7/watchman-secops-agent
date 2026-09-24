@@ -1,0 +1,300 @@
+{
+ "_meta": {
+  "created": "2026-09-24",
+  "method": "Falco 38건: 규칙별 층화 무작위(seed 20260924, verdict 필드가 있고 판정 재사용이 아닌 run 중). 정답 라벨은 모델 판정을 보기 전에 알림 원본 필드(프로세스·명령줄·부모·파드)만 보고 매김. 사고 13건: settlement-prod 9/23 실장애 구간의 비-Falco 알림 전수.",
+  "gt_values": "benign | incident | unverifiable(채점 제외)"
+ },
+ "20260924-080200-012": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python"
+ },
+ "20260924-100314-209": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: exe"
+ },
+ "20260924-091801-157": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: git-lfs"
+ },
+ "20260924-095247-197": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: chrome-headless"
+ },
+ "20260924-101514-219": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python"
+ },
+ "20260924-081947-047": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python3"
+ },
+ "20260924-092048-162": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python"
+ },
+ "20260924-092335-164": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: fc-cache"
+ },
+ "20260924-103035-004": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python"
+ },
+ "20260924-081023-024": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python3"
+ },
+ "20260924-085924-121": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: git-lfs"
+ },
+ "20260924-083543-081": {
+  "set": "falco-stratified",
+  "rule": "Drop and execute new binary in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: python3"
+ },
+ "20260924-113355-007": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260924-114016-010": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260924-113359-008": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260924-112928-004": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260924-103403-008": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "unverifiable",
+  "basis": "출처 세션을 기록으로 확정 못함 — 채점 제외"
+ },
+ "20260924-114208-011": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260924-112736-003": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260924-113500-009": {
+  "set": "falco-stratified",
+  "rule": "Read sensitive file untrusted",
+  "gt": "benign",
+  "basis": "운영자(봇4) 읽기전용 PAM·sudo 점검 명령 — 세션 기록과 명령줄 일치"
+ },
+ "20260923-194239-014": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260924-063254-021": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260923-192821-008": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260923-194342-015": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260923-194020-013": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260924-071256-005": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260924-063414-022": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260923-192844-009": {
+  "set": "falco-stratified",
+  "rule": "Run shell untrusted",
+  "gt": "benign",
+  "basis": "CI 테스트용 postgres initdb 의 locale 조회"
+ },
+ "20260924-075354-008": {
+  "set": "falco-stratified",
+  "rule": "Contact K8S API Server From Container",
+  "gt": "benign",
+  "basis": "정상 컨트롤러/잡의 API 접근: watchman-arc-68c9fff7-listener"
+ },
+ "20260923-190032-001": {
+  "set": "falco-stratified",
+  "rule": "Contact K8S API Server From Container",
+  "gt": "benign",
+  "basis": "정상 컨트롤러/잡의 API 접근: velero-completed-job-cleanup-29836500-8rcql"
+ },
+ "20260924-075237-007": {
+  "set": "falco-stratified",
+  "rule": "Contact K8S API Server From Container",
+  "gt": "benign",
+  "basis": "정상 컨트롤러/잡의 API 접근: xr-arc-7dcd85d4-listener"
+ },
+ "20260923-185316-001": {
+  "set": "falco-stratified",
+  "rule": "Contact K8S API Server From Container",
+  "gt": "benign",
+  "basis": "정상 컨트롤러/잡의 API 접근: wm-watchman-6859c8b774-dq2jg"
+ },
+ "20260923-191835-002": {
+  "set": "falco-stratified",
+  "rule": "BPF filter attached to socket (BPFDoor pattern)",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: dockerd"
+ },
+ "20260923-192335-006": {
+  "set": "falco-stratified",
+  "rule": "BPF filter attached to socket (BPFDoor pattern)",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: dockerd"
+ },
+ "20260924-085006-104": {
+  "set": "falco-stratified",
+  "rule": "Packet socket created in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: dockerd"
+ },
+ "20260923-191902-003": {
+  "set": "falco-stratified",
+  "rule": "Packet socket created in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: dockerd"
+ },
+ "20260923-192641-007": {
+  "set": "falco-stratified",
+  "rule": "Packet socket created in container",
+  "gt": "benign",
+  "basis": "CI 러너(ARC) 잡의 정상 빌드·테스트 동작: dockerd"
+ },
+ "20260923-210035-031": {
+  "set": "falco-stratified",
+  "rule": "Clear Log Activities",
+  "gt": "benign",
+  "basis": "logwatch 일일 리포트 cron"
+ },
+ "20260923-233557-001": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-233740-002": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-233923-003": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-234123-004": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-234240-005": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-external-data 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-234554-006": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-external-data 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-234923-007": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-235123-008": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-external-data 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260923-235923-009": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-external-data 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260924-002955-010": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260924-003955-011": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-external-data 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260924-031854-012": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-external-data 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ },
+ "20260924-032854-013": {
+  "set": "incident-window",
+  "gt": "incident",
+  "basis": "settlement-prod settlement-finance 실제 CrashLoopBackOff·롤아웃 중단(kube_read 로 관측된 파드 상태, 이후 새 리비전으로 복구)"
+ }
+}

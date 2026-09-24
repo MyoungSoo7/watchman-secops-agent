@@ -1,0 +1,312 @@
+{
+ "model": "meta/llama-3.2-11b-vision-instruct",
+ "reps": 1,
+ "rows": [
+  {
+   "case": "fx-case-01-frpc-restart",
+   "rep": 0,
+   "seconds": 99.1,
+   "llm_calls": 5,
+   "tool_ok": 3,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [
+    "container_id 는 12~64자리 16진수"
+   ],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-02-dashboard-restart",
+   "rep": 0,
+   "seconds": 91.3,
+   "llm_calls": 5,
+   "tool_ok": 3,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [
+    "container_id 는 12~64자리 16진수"
+   ],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-03-heartbeat-flap",
+   "rep": 0,
+   "seconds": 49.3,
+   "llm_calls": 5,
+   "tool_ok": 3,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [
+    "container_id 는 12~64자리 16진수"
+   ],
+   "classification": "heartbeat flapping"
+  },
+  {
+   "case": "fx-case-04-velero-partialfail",
+   "rep": 0,
+   "seconds": 48.1,
+   "llm_calls": 4,
+   "tool_ok": 2,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [
+    "container_id 는 12~64자리 16진수"
+   ],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-05-ksm-restart",
+   "rep": 0,
+   "seconds": 81.9,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "rep": 0,
+   "seconds": 52.1,
+   "llm_calls": 4,
+   "tool_ok": 2,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [
+    "container_id 는 12~64자리 16진수"
+   ],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-07-ddak-restart",
+   "rep": 0,
+   "seconds": 135.7,
+   "llm_calls": 3,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 전 모델 응답 없음: TimeoutError('The read operation timed out')",
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 전 모델 응답 없음: TimeoutError('The read operation timed out')"
+  },
+  {
+   "case": "fx-case-08-nonexistent-job",
+   "rep": 0,
+   "seconds": 33.1,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-09-nonexistent-pod",
+   "rep": 0,
+   "seconds": 17.9,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-case-10-nodenotready-stale",
+   "rep": 0,
+   "seconds": 34.7,
+   "llm_calls": 5,
+   "tool_ok": 3,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [
+    "container_id 는 12~64자리 16진수"
+   ],
+   "classification": "도구로 관측한 근거로 정상 동작임을 확인했을 때만 써라 — 같은 소음이 반복되면 이 판정이 재조사 없이 재사용된다. 확인 못 했으면 \"불명\"."
+  },
+  {
+   "case": "fx-scn-01-webshell-rce-falco",
+   "rep": 0,
+   "seconds": 84.3,
+   "llm_calls": 5,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-scn-02-github-key-theft-abuse",
+   "rep": 0,
+   "seconds": 135.7,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "네트워크 오류"
+  },
+  {
+   "case": "fx-scn-03-consult-api-bola-abuse",
+   "rep": 0,
+   "seconds": 79.7,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "의심"
+  },
+  {
+   "case": "fx-scn-05-jwt-session-replay-hijack",
+   "rep": 0,
+   "seconds": 52.7,
+   "llm_calls": 4,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "의심"
+  }
+ ]
+}

@@ -1,0 +1,285 @@
+{
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "reps": 1,
+ "rows": [
+  {
+   "case": "fx-case-01-frpc-restart",
+   "rep": 0,
+   "seconds": 113.3,
+   "llm_calls": 3,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 503 (5회, 대기 78s)",
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 503 (5회, 대기 78s)"
+  },
+  {
+   "case": "fx-case-02-dashboard-restart",
+   "rep": 0,
+   "seconds": 133.6,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "대시보드 파드가 업스트림 연결 재설정(transient network blip)으로 재시작했으나 현재 복구됨. 알림의 재시작 횟수(13)와 현재 카운트(3) 불일치는 파드 재생성 가능성 시사."
+  },
+  {
+   "case": "fx-case-03-heartbeat-flap",
+   "rep": 0,
+   "seconds": 92.7,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "노드 재부팅으로 인한 파드 재스케줄링, 과거 재시작 34회는 이전 노드(david) 누적치, 현재 노드(node-a)에서는 3회만 재시작"
+  },
+  {
+   "case": "fx-case-04-velero-partialfail",
+   "rep": 0,
+   "seconds": 117.3,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "Velero 백업 'daily-with-volumes-20260919030028' PartiallyFailed 알림 — PVB(파드 볼륨 백업) 미준비 의심이나 클러스터에서 상세 상태 확인 불가"
+  },
+  {
+   "case": "fx-case-05-ksm-restart",
+   "rep": 0,
+   "seconds": 149.9,
+   "llm_calls": 6,
+   "tool_ok": 4,
+   "arg_rejected": 1,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [
+    "get 은 name 필수 (목록은 list)"
+   ],
+   "classification": "kube-state-metrics 파드 재시작 반복(최근 3회, exit code 1), 노드 동시 전환 의심 — 메모리 압박 단정 근거 부족"
+  },
+  {
+   "case": "fx-case-06-selfhealer-restart",
+   "rep": 0,
+   "seconds": 83.5,
+   "llm_calls": 0,
+   "tool_ok": 0,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 503 (5회, 대기 82s)",
+   "first_ok": false,
+   "tools_used": [],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 503 (5회, 대기 82s)"
+  },
+  {
+   "case": "fx-case-07-ddak-restart",
+   "rep": 0,
+   "seconds": 179.5,
+   "llm_calls": 6,
+   "tool_ok": 5,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "ddak-app 파드가 업스트림 연결 오류(connection reset by peer)로 반복 종료·재시작 중(재시작 3회, exitCode 1)"
+  },
+  {
+   "case": "fx-case-08-nonexistent-job",
+   "rep": 0,
+   "seconds": 114.4,
+   "llm_calls": 3,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 503 (5회, 대기 79s)",
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 503 (5회, 대기 79s)"
+  },
+  {
+   "case": "fx-case-09-nonexistent-pod",
+   "rep": 0,
+   "seconds": 123.9,
+   "llm_calls": 5,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 1,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": true,
+   "normalized": false,
+   "llm_error": null,
+   "first_ok": true,
+   "tools_used": [
+    "es_search",
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "알림 대상 파드(ghost-pod-does-not-exist)가 클러스터에 존재하지 않음 — 오탐(스테일 알림)"
+  },
+  {
+   "case": "fx-case-10-nodenotready-stale",
+   "rep": 0,
+   "seconds": 247.1,
+   "llm_calls": 3,
+   "tool_ok": 3,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 429 (5회, 대기 79s)",
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 429 (5회, 대기 79s)"
+  },
+  {
+   "case": "fx-scn-01-webshell-rce-falco",
+   "rep": 0,
+   "seconds": 80.2,
+   "llm_calls": 0,
+   "tool_ok": 0,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 503 (5회, 대기 78s)",
+   "first_ok": false,
+   "tools_used": [],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 503 (5회, 대기 78s)"
+  },
+  {
+   "case": "fx-scn-02-github-key-theft-abuse",
+   "rep": 0,
+   "seconds": 103.0,
+   "llm_calls": 1,
+   "tool_ok": 1,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 429 (5회, 대기 80s)",
+   "first_ok": true,
+   "tools_used": [
+    "kube_read"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 429 (5회, 대기 80s)"
+  },
+  {
+   "case": "fx-scn-03-consult-api-bola-abuse",
+   "rep": 0,
+   "seconds": 159.8,
+   "llm_calls": 4,
+   "tool_ok": 4,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 503 (5회, 대기 81s)",
+   "first_ok": true,
+   "tools_used": [
+    "es_search"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 503 (5회, 대기 81s)"
+  },
+  {
+   "case": "fx-scn-05-jwt-session-replay-hijack",
+   "rep": 0,
+   "seconds": 118.6,
+   "llm_calls": 2,
+   "tool_ok": 2,
+   "arg_rejected": 0,
+   "format_error": 0,
+   "grace_violation": 0,
+   "infra_error": 0,
+   "finished": false,
+   "normalized": false,
+   "llm_error": "NIM 재시도 소진: HTTP 429 (5회, 대기 77s)",
+   "first_ok": true,
+   "tools_used": [
+    "es_search"
+   ],
+   "rejections": [],
+   "classification": "LLM 응답 실패로 조사 미완 — NIM 재시도 소진: HTTP 429 (5회, 대기 77s)"
+  }
+ ]
+}

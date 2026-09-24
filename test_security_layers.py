@@ -136,6 +136,48 @@ class RedactTest(unittest.TestCase):
         out = redact.guard({"a": [{"b": "password=hunter2hunter2hunter2"}]})
         self.assertNotIn("hunter2hunter2hunter2", str(out))
 
+    # 2026-09-24 보안 리뷰: redact 는 json.dumps 결과에 적용되는데, 키 뒤에 닫는 따옴표가
+    # 끼는 JSON·repr 꼴을 kv_secret 이 못 잡았다. 앱이 설정을 JSON 으로 로그에 찍으면
+    # 그 값이 그대로 NIM·감사로그·카드로 나갔다.
+    def test_json_and_repr_shaped_secrets_are_masked(self):
+        for text in ('{"password": "SuperSecretValue123"}',
+                     "{'db_password': 'SuperSecretValue123'}",
+                     '"apiKey":"SuperSecretValue123"',
+                     "password=hunter2x"):
+            out, hits = redact.redact(text)
+            self.assertNotIn("SuperSecretValue123", out, text)
+            self.assertNotIn("hunter2x", out, text)
+            self.assertTrue(hits, text)
+
+    def test_url_userinfo_password_is_masked(self):
+        out, _ = redact.redact("jdbc url postgres://settle:pw12345@jen-postgres:5432/db")
+        self.assertNotIn("pw12345", out)
+        self.assertIn("postgres://settle:", out)   # 어떤 계정인지는 읽혀야 한다
+        self.assertIn("@jen-postgres", out)
+
+    def test_vendor_api_keys_are_masked(self):
+        for secret in ("sk-ant-api03-" + "A1b2C3d4" * 5,
+                       "sk-proj-" + "A1b2C3d4" * 5,
+                       "AIzaSy" + "A1b2C3d4E5" * 3 + "abcde"):
+            out, _ = redact.redact(f"found {secret} in env")
+            self.assertNotIn(secret, out)
+
+    def test_guard_masks_values_under_sensitive_keys(self):
+        # 값이 짧거나 무늬가 없어도 키 이름이 비밀이면 통째로 가린다.
+        out, hits = redact.guard({"password": "abc", "DB_PASSWORD": "x1",
+                                  "prompt_tokens": 18768, "token_count": "12"})
+        self.assertNotIn("abc", str(out["password"]))
+        self.assertNotIn("x1", str(out["DB_PASSWORD"]))
+        self.assertEqual(18768, out["prompt_tokens"])   # 수치 필드는 건드리지 않는다
+        self.assertEqual("12", out["token_count"])
+        self.assertTrue(hits)
+
+    def test_ordinary_log_lines_stay_clean(self):
+        for clean in ('{"level":"info","msg":"token refreshed","user":"lms"}',
+                      "password policy updated for 3 users",
+                      "https://security.lemuel.co.kr/view"):
+            self.assertEqual([], redact.scan(clean), clean)
+
 
 def _velero(backups=(), schedules=(), bsls=()):
     def fetch(kind):
