@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 .es_watchman_pass
 .k8s_watchman_token
+eval/nat-data/
+.tmp/
+nat_watchman/.tmp/
+*.egg-info/

@@ -1,0 +1,11 @@
+# nat run --config_file nat_watchman/configs/workflow.yml --input "$(cat fixtures/kube-job-failed.json)"
+# nat serve 로 띄우면 /generate 로 알림을 넣을 수 있다.
+functions:
+  es_search:
+    _type: watchman_es_search
+  kube_read:
+    _type: watchman_kube_read
+workflow:
+  _type: watchman_triage
+  llm_mode: nim
+  run_prefix: nat-run

@@ -1,11 +1,25 @@
 # Watchman(파수꾼)
 
-> **심사용 공개 스냅샷.** 개발 리포(비공개)의 `63bec51` 시점(2026-09-25)을 히스토리 없이 옮긴 사본이다.
+> **심사용 공개 스냅샷.** 개발 리포(비공개)의 `8628bec` 시점(2026-09-25)을 히스토리 없이 옮긴 사본이다.
 > 변경점: 개인 이메일 마스킹, 내부 문서 2개(`request.md` 제출 초안·`docs/PRICING-DRAFT.md` 가격 초안) 제외. 코드·테스트·평가 하네스는 원본과 동일.
 
 Lemuel K3s 클러스터의 Alertmanager 알림을 받아 **로그 조회 → 원인 분류 → 조치 제안**을
 수행하는 보안 통제된 SecOps 에이전트. 전 구간 read-only, 자동 실행 없음.
 설계·통제 축·마일스톤은 [SPEC.md](SPEC.md), 제출 서사는 [SUBMISSION.md](SUBMISSION.md) 참조.
+
+## 30초 요약 — 심사 4축별 숫자 하나, 증거 하나
+
+**무엇:** 실 K3s 6노드에 상주하며 알림을 받아 스스로 조사(read-only)하고 판정·조치 *제안*만 하는 SecOps 에이전트.
+**핵심:** 에이전트 기능보다 **그 에이전트 자체를 어떻게 잠갔는지**를 실운영 숫자로 보인다. 자동 실행은 없다.
+
+| 심사 축 | 한 줄 | 숫자 (실측) | 증거 |
+|---|---|---|---|
+| ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + 공식 Skill 패키징 | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
+| ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건) | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
+| ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **12/12** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전) · 테스트 **243** | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
+| ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · 미구현 1(Inference 키 격리, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
+
+키 없이 재현: `python3 -m unittest discover -p 'test_*.py'` · `python3 eval/run_redteam.py`. 미달·미측정은 [SUBMISSION.md 정직 고지](SUBMISSION.md#정직-고지-미달미측정미완)에 전부 적었다.
 
 ## 빠른 시작 (키 없이)
 

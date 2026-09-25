@@ -144,6 +144,10 @@ python3 eval/run_redteam.py     # exit 0 = 감지율 100% AND 오탐 0
 그 사실을 감사로그 `finish_normalized` 의 fixes 에 남긴다. 판정 재사용은 `오탐` run 만 대상이므로 이런 run 은 재사용되지도 않는다.
 모델이 주입을 알아챘는지와 무관하게 결과가 같아야 하므로, 하한은 모델 문장이 아니라 코드 감지 수에 건다.
 
+2026-09-25 확장: 정규식이 0건이어도 **NVIDIA 안전 가드가 unsafe 로 본 run**(`guard_flags > 0`)에 같은 하한을 건다 — 말을 바꾼 주입은 정규식을 비껴간다.
+가드는 알림 주석 외에 정규식이 못 본 자유 텍스트 도구 출력(es_search·log_search·kube_read logs)에도 run 당 `GUARD_TOOL_MAX`(기본 1)회 돈다.
+같은 날 `<data>` 구분자 무력화(`data_block`: 본문 속 `</data>` → `‹/data›`), 카드 URL 무력화(`hxxps://a[.]b`)와 텔레그램 링크 미리보기 끔을 넣었다 — 미리보기는 텔레그램 서버가 URL 을 GET 하는 무클릭 유출 경로다.
+
 ## 4. 재현
 
 ```bash

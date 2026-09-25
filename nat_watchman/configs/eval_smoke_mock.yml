@@ -1,0 +1,23 @@
+# nat eval --config_file nat_watchman/configs/eval_smoke_mock.yml
+# 키 없이 도는 결정적 스모크 — 파이프라인·스텝 기록·평가기 배선만 확인한다(점수는 의미 없음).
+# 데이터: eval/nat-data/smoke3.json (build_nat_dataset.py 결과의 앞 3건)
+workflow:
+  _type: watchman_triage
+  llm_mode: mock
+  audit_path: nat_watchman/.tmp/audit-mock.jsonl
+  run_prefix: nat-mock
+
+eval:
+  general:
+    max_concurrency: 4
+    output_dir: nat_watchman/.tmp/eval-mock
+    dataset:
+      _type: json
+      file_path: eval/nat-data/smoke3.json
+    profiler:
+      base_metrics: true
+      compute_llm_metrics: true
+      csv_exclude_io_text: true
+  evaluators:
+    verdict:
+      _type: watchman_verdict

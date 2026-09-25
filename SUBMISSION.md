@@ -16,6 +16,21 @@
 아니라 **에이전트 자체를 6축으로 잠근 보안 통제 설계**다 — "만든 것"과 "그걸 통제한
 방법"을 한 세트로 보여준다. 자동 실행 없음. 전 스텝 감사 기록.
 
+
+## 30초 요약 — 심사 4축별 숫자 하나, 증거 하나
+
+**무엇:** 실 K3s 6노드에 상주하며 알림을 받아 스스로 조사(read-only)하고 판정·조치 *제안*만 하는 SecOps 에이전트.
+**핵심:** 에이전트 기능보다 **그 에이전트 자체를 어떻게 잠갔는지**를 실운영 숫자로 보인다. 자동 실행은 없다.
+
+| 심사 축 | 한 줄 | 숫자 (실측) | 증거 |
+|---|---|---|---|
+| ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + 공식 Skill 패키징 | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
+| ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건) | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
+| ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **12/12** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전) · 테스트 **243** | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
+| ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · 미구현 1(Inference 키 격리, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
+
+키 없이 재현: `python3 -m unittest discover -p 'test_*.py'` · `python3 eval/run_redteam.py`. 미달·미측정은 아래 **정직 고지**에 전부 적었다.
+
 ---
 
 ## 축 ① 기술 활용 심도 (NVIDIA·에이전트 기술)

@@ -1,0 +1,23 @@
+# nat eval --config_file nat_watchman/configs/eval_real_alerts.yml
+# 실알림 50건(블라인드 라벨) 재생 — 실 NIM·실 클러스터(읽기 전용). 데이터셋은 eval/build_nat_dataset.py 로 만든다.
+# 주의: 재생 시점의 클러스터·로그 상태로 조사하므로 알림 당시와 근거가 다를 수 있다(보고서에 명시).
+workflow:
+  _type: watchman_triage
+  llm_mode: nim
+  audit_path: nat_watchman/.tmp/audit-eval.jsonl
+  run_prefix: nat-eval
+
+eval:
+  general:
+    max_concurrency: 2          # NIM 동시 호출 상한(운영 NIM_CONCURRENCY 와 같은 규모)
+    output_dir: nat_watchman/.tmp/eval-real
+    dataset:
+      _type: json
+      file_path: eval/nat-data/real-alerts-20260924.json
+    profiler:
+      base_metrics: true
+      compute_llm_metrics: true
+      csv_exclude_io_text: true
+  evaluators:
+    verdict:
+      _type: watchman_verdict

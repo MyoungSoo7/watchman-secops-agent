@@ -1,0 +1,13 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 64"]
+
+[project]
+name = "nat_watchman"
+version = "0.1.0"
+dependencies = ["nvidia-nat[eval]~=1.9"]
+requires-python = ">=3.11,<3.14"
+description = "Watchman SecOps triage agent as a NeMo Agent Toolkit plugin"
+
+[project.entry-points.'nat.components']
+nat_watchman = "nat_watchman.register"
