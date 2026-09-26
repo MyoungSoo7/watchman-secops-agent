@@ -88,7 +88,7 @@ footer .note{color:#8b6d3a}
     <span class="dot" id="caDot" style="background:#3fb950"></span>
     <span id="caText">클러스터 경보 수준: 로딩…</span>
     <span class="spacer"></span>
-    <span class="meta">모델 <b id="model">–</b> · <span id="llm">–</span> · 갱신 <b id="now">–</b></span>
+    <span class="meta">모델 <b id="model">확인 중…</b> · <span id="llm">확인 중…</span> · 갱신 <b id="now">확인 중…</b></span>
   </div>
 
   <div class="grid-lbl">control-plane</div>
@@ -179,9 +179,9 @@ function buildNodes(){
 }
 
 function render(d){
-  document.getElementById('model').textContent=d.model||'–';
-  document.getElementById('llm').textContent=d.llm_mode||'–';
-  document.getElementById('now').textContent=(d.now||'').replace('T',' ').replace(/\+0000$/,' UTC');
+  document.getElementById('model').textContent=d.model||'정보 없음';
+  document.getElementById('llm').textContent=d.llm_mode||'정보 없음';
+  document.getElementById('now').textContent=(d.now||'정보 없음').replace('T',' ').replace(/\+0000$/,' UTC');
   var runs=(d.runs||[]);
 
   // 노드 오버레이 초기화

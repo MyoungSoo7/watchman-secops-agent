@@ -22,7 +22,7 @@ flowchart TD
     TOOLS -->|"read-only 계정 ②<br/>get/list/logs, secrets 403"| ES[("ES logs<br/>ns logging")]
     TOOLS -->|"SA watchman-readonly ②"| K8S["K8s API"]
     NIMOUT -->|"HTTPS 443"| NIM["NVIDIA NIM<br/>nemotron-3-super-120b"]
-    CARD -->|"전송 전용 토큰 ②"| TG["Telegram"]
+    CARD -->|"봇 토큰 ② (전송 + 👍/👎 callback 수신)"| TG["Telegram"]
     CARD -->|"best-effort"| MAIL["Email SMTP"]
     AUDIT --> STATE["GET /state (FR-15)<br/>run·상태7·사용량 집계"]
     STATE --> VIEW["공개 관제 뷰<br/>security.lemuel.co.kr<br/>(POST 403 = 읽기전용)"]

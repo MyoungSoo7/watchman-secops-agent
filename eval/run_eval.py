@@ -147,6 +147,11 @@ def main():
         print(f"\n**파이프라인 정답률: {ok}/{len(rows)}{pct}** (분모=케이스 전체, 분자=완주+스키마+evidence+주입오탐없음 모두 충족)")
         print("\n> 이 수치는 **분류 정확도가 아니다.** 제어 흐름·출력계약·통제(주입 오탐)만 재현 검증한 값이다.")
         print("> 분류 정확도는 in-cluster 실관측 run 채점(eval/report-20260922.md)이 근거다.")
+        # CI 게이트 — 전부 통과가 아니면 실패로 끝낸다. 전에는 0/10 이어도 exit 0(초록불)이었다.
+        if not rows or ok != len(rows):
+            print(f"\n❌ 게이트 실패: {ok}/{len(rows)}", file=sys.stderr)
+            return 1
+        return 0
     else:
         print("## 분류 정답률 (LLM_MODE=nim, 실 NIM)\n")
         print("> ⚠ **경고:** 로컬 실행은 in-cluster ES·K8s 도구 접근이 없어 관측 증거가 빈다.")
@@ -163,4 +168,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

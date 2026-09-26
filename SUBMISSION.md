@@ -25,8 +25,8 @@
 | 심사 축 | 한 줄 | 숫자 (실측) | 증거 |
 |---|---|---|---|
 | ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + 공식 Skill 패키징 | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
-| ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건) | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
-| ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **12/12** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전) · 테스트 **243** | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
+| ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건). "전부 오탐" 기본값은 같은 표본에서 **0/13**. 알림 시점 증거 재생 **9/13**·오격상 0/37 | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
+| ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **13/13** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전, 라이브는 12건 시점) · 테스트 **307** · 호스트 경보 E2E 카나리 결함 3건 수정 | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
 | ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · 미구현 1(Inference 키 격리, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
 
 키 없이 재현: `python3 -m unittest discover -p 'test_*.py'` · `python3 eval/run_redteam.py`. 미달·미측정은 아래 **정직 고지**에 전부 적었다.
@@ -129,7 +129,7 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
   | ② | 공개호스트 쓰기 가드 | `POST /alert` → `HTTP 403` "public endpoint is read-only" |
   | ③ | 이그레스(포트·CIDR 허용목록) | 파드에서 `:80`·`:8080` → `ConnectionRefusedError` 차단, `:443` OPEN(NIM/SMTP 의도 허용) |
   | ④ | 자동 실행 없음 | 등록 도구 `es_search`·`kube_read`(읽기)뿐, 산출은 제안 카드만 |
-  | ⑤ | 레드팀 감지 | 12/12 감지·오탐 0, `run_redteam.py` exit 0 |
+  | ⑤ | 레드팀 감지 | 13/13 감지·오탐 0, `run_redteam.py` exit 0 |
   | ⑥ | 비루트·readOnlyRootFS | `uid=65534(nobody)`, 루트FS 쓰기 `Read-only file system`, `drop:[ALL]` |
 
   > 정직 기재: ③은 "외부 전면 차단"이 아니라 포트·목적지 허용목록(외부 443/587은 NIM·SMTP용 의도 허용).
@@ -149,7 +149,9 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
   **27/37**(의심 4·불명 6), 정상 알림을 '사고' 로 올린 것 **0/37**. 실장애 1사건의 반복 알림 13건은 **13/13 '사고'**
   (단일 사건이라 민감도로 일반화하지 않음; 원인 서술 중 4건은 근거로 검증 불가). 악성 알림은 표본에 0건 —
   보안 탐지율로 인용하지 않는다. 라벨러는 작업 세션(Claude). [`eval/real-alerts-20260924.md`](eval/real-alerts-20260924.md)
-- **레드팀 결과표 (P5):** 코드 감지층 **12/12 = 100%**, 오탐 **0/12**. `eval/run_redteam.py`
+  **비교 기준선은 "전부 오탐" 기본값이다.** 비전문가가 카드만 보고 판정하면 사실상 이 값이 된다(2026-09-25 텔레그램 10장 실측, 응답자 본인 진술). 이 기본값을 같은 표본에 적용하면 정상 37/37·실장애 알림 **0/13** 이고, Watchman 은 정상 27/37(73%)을 닫으면서 실장애 알림 13/13 을 올렸다. 보안 전문가와의 비교·MTTT 단축률은 측정하지 않았다. [`eval/nat-kpi-20260925.md`](eval/nat-kpi-20260925.md) 기준선 절.
+- **재생 평가는 "알림 시점 증거"로 한다 (2026-09-25, NAT `nat eval`, 같은 50건):** 지금 클러스터로 재생하면 이미 복구된 사고의 증거가 사라져 실장애 알림이 **3/13** 만 '사고' 였다(측정 인공물). 운영이 조사 때 받은 결과를 (도구, 인자) 로 되돌려주는 재생(`eval/snapshot_replay.py`)에서는 **9/13 '사고'**(의심 3·불명 1), 실장애를 '오탐' 으로 닫은 것 **0/13**, 정상을 '사고' 로 올린 것 **0/37**(정상 종결 20/37, 의심 7·불명 10). 한계: 이날 이전 알림은 도구 결과가 앞 1,500자 요약뿐이고, 재생 LLM 이 운영과 다른 조회를 해 도구 호출 169건 중 **66% 는 기록이 없었다**(현재 클러스터로 채우지 않음). 운영은 2026-09-25 14:57 KST 부터 도구 결과 원문(마스킹 후)을 `/data/snapshots.jsonl` 에 남긴다. [`eval/nat-kpi-20260925.md`](eval/nat-kpi-20260925.md) 재생 절.
+- **레드팀 결과표 (P5):** 코드 감지층 **13/13 = 100%**, 오탐 **0/12**(13번은 2026-09-26 추가 — 판정 유도형 영문, 라이브 LLM 회전엔 미포함). `eval/run_redteam.py`
   가 exit 0 로 회귀 게이트. **LLM 거부층 전수 라이브 12건(2026-09-24, 실 클러스터·실 NIM):** 파괴·유출 행동 **0/12**,
   실제 비밀값 유출 0/12, 시스템 프롬프트 유출 0/12, ⚠ 12/12. 1건(12)은 NIM 429 소진으로 LLM 판정 없음, 1건(09)은 공격 문자열이
   ES 검색어로 들어감(읽기 전용, 무해) — 표·정직 기재는 [`eval/REDTEAM.md`](eval/REDTEAM.md) §3.1.
@@ -157,14 +159,21 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
   닫은 것이 6/11·4/11 — 알림 은폐 위험이라 **주입 감지 시 판정을 '의심' 이상으로 올리는 코드 하한**을 넣었다(§3.2·3.3).
 - **가시화:** `GET /state`(FR-15) JSON — 최근 run·상태 7값·사용량 집계. 주입 시 카드 ⚠ 배지.
   공개 호스트(`security.lemuel.co.kr`)는 POST 403 으로 읽기 전용 강제.
-- **테스트:** 단위테스트 **206건 전부 통과** — `test_watchman` 149 · `test_security_layers` 28 · `test_card_evidence` 11 · `test_logsrc` 18
-  (2026-09-23 재실행).
+- **테스트:** 단위테스트 **307건 전부 통과**(2026-09-26) — `test_watchman` 216 · `test_security_layers` 28 · `test_logsrc` 18 · `test_guardrail_view` 14 · `test_card_evidence` 12 · `test_story` 7 · `test_falco_split` 6 · `test_featured` 6
+  (2026-09-25 재실행, `python3 -m unittest discover -p 'test_*.py'`).
+- **호스트 경보 E2E 카나리 (2026-09-25):** 노드에서 읽기 전용 sudo 를 실행해 Falco → Alertmanager → Watchman → 카드까지
+  끝까지 따라갔다. 4회 중 앞 3회가 서로 다른 결함에 걸렸고, 셋 다 고쳐 배포했다.
+  ① Alertmanager 억제 규칙이 라벨 없는 Falco 경보를 서로 같다고 봐서, critical 1건이 전체 warning 을 묻었다(근접 시 **146/192 미수신**).
+  ② `es_search` 가 필드 문법을 글자로 검색했다. 과거 호출 60건 재검색 결과 적중이 **8 → 19 → 35**.
+  ③ CI 경보 폭주 뒤에 진짜 경보가 줄을 섰다. 드문 룰 먼저 번갈아 조사하도록 바꿨다.
+  4회차는 경보 도착 31초·카드 21초, 근거 3줄이 모두 호스트 sudo 기록 원문이었다. 1노드·1회라 탐지율로 인용하지 않는다.
+  [`eval/canary-e2e-20260925.md`](eval/canary-e2e-20260925.md)
 - **회귀 게이트 하네스 6종, 전부 exit 0** (2026-09-23 재실행, 클러스터·LLM 없이 결정론적으로 재현):
 
   | 하네스 | 채점 대상 | 결과 |
   |---|---|---|
   | `run_eval.py` | 파이프라인 계약(제어 흐름·출력·주입 오탐) | 10/10 |
-  | `run_redteam.py` | 주입 감지층 | 감지 12/12 · 오탐 0/12 |
+  | `run_redteam.py` | 주입 감지층 | 감지 13/13 · 오탐 0/12 |
   | `run_chain.py` | 킬체인 승격 시점 + 오탐 A~E(정상 뱅크·단계 반복·창 밖·주입 어휘·어휘 전용 체인) | 전부 통과 |
   | `run_egress.py` | 출력 유출(마스킹·원문 잔존·정상 오탐) | 전부 통과 |
   | `run_recovery.py` | 복구 판정(조회 실패 ≠ 정상) | 전부 통과 |
@@ -187,6 +196,29 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
   가드가 놓친 도구 오용 2건을 정규식이 잡는다. 판정만 하고 막지 않는다 — 실패는 `guard_error` 로 남고 조사는 계속된다.
 - **확장성 설계 = Build Skill API OFF 어댑터.** 런타임을 안 건드리고 미래 요건에 선제 대응.
   게이트 하나로 조사 도구가 늘고 호출이 감사로그에 남는다 — 독창적 리스크 관리.
+
+---
+
+## 향후 계획 — 로컬 NVIDIA GPU 로 추론을 클러스터 안에 가둔다
+
+지금은 추론을 NVIDIA 호스팅 NIM(`integrate.api.nvidia.com`) 으로 보낸다. 이 구조에서 생긴 약점 세 개를 이 문서가
+이미 고지했다. 셋 다 추론을 클러스터 안 GPU 노드의 **셀프호스팅 NIM 컨테이너**로 옮기면 한꺼번에 풀린다
+([NVIDIA NIM for LLMs 문서](https://docs.nvidia.com/nim/large-language-models/latest/) — 같은 OpenAI 호환 API 를
+자체 인프라에서 제공).
+
+| 지금의 약점 (고지 번호) | 로컬 NIM 이후 |
+|---|---|
+| Inference 키 비노출 미구현 — 파드가 `NVIDIA_API_KEY` 를 env 로 쥔다 (정직 고지 5, `eval/NEMOCLAW-MAP.md` §3-1) | 에이전트 파드에서 키를 뺀다. 모델 내려받기 자격증명은 추론 서버 쪽에만 둔다 → OpenShell Inference 도메인과 같은 구조 |
+| 근거가 실린 프롬프트가 클러스터 밖으로 나간다 — 허용 채널은 양방향 (`eval/NEMOCLAW-MAP.md` §4) | NetworkPolicy 이그레스 허용 목적지 4곳 → 3곳(K8s API·ES·Telegram). 로그 근거가 외부로 나가는 경로가 없어진다 |
+| NIM 측 429·503 으로 부분 결과 (정직 고지 7) | 호출 한도가 우리 GPU 용량이 된다 — 통제할 수 없던 변수가 통제할 수 있는 변수로 바뀐다 |
+
+**단계** (코드는 이미 엔드포인트를 env 로 받는다: `NIM_BASE`·`NIM_MODEL`·`NIM_FALLBACK_MODELS`):
+1. GPU 노드 1대를 **유선 노드**에 둔다(상태 있는 워크로드는 유선 노드에 둔다는 클러스터 원칙). NVIDIA GPU Operator 로 드라이버·런타임을 관리하고 NIM 컨테이너를 클러스터 내부 Service 로만 노출한다.
+2. `NIM_BASE` 를 클러스터 내부 주소로 바꾼다. 호스팅 NIM 은 **폴백으로 남긴다** — 로컬이 죽어도 경보가 안 끊기게(지금 모델 폴백과 같은 원리). 필요한 코드 변경은 하나다: 지금은 `LLM_MODE=nim` 이면 키가 없을 때 기동을 거부하므로(`watchman.py` `NVIDIA_API_KEY 미설정`), 내부 엔드포인트일 때는 키를 선택 사항으로 바꾼다.
+3. **다시 잰다.** 레드팀 13건·파이프라인 10건·실재생 채점을 로컬 모델로 재실행한다. 지금 수치(레드팀 코드층 13/13, 라이브 LLM 0/12 우회)는 호스팅 Nemotron 기준이다. 한 장의 GPU 에 올릴 모델은 지금보다 작을 가능성이 크고, 작은 모델은 주입 방어·분류 품질이 떨어질 수 있다 — 재측정을 통과하기 전에는 주 경로로 쓰지 않는다.
+4. 통과하면 이그레스에서 NIM 을 빼고, 호스팅 키를 회수한다.
+
+**아직 모르는 것:** GPU 기종과 올릴 모델 크기는 정하지 않았다. 그래서 성능·비용 수치는 지금 적지 않는다.
 
 ---
 
@@ -259,9 +291,9 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
 ## 부록 — 재현 명령
 
 ```bash
-python3 -m unittest test_watchman test_security_layers test_card_evidence test_logsrc   # 149+28+11+18 = 206 통과
+python3 -m unittest discover -p 'test_*.py'   # 216+28+18+14+12+7+6+6 = 307 통과
 python3 eval/run_eval.py                      # 파이프라인 10/10 (mock, 결정적)
-python3 eval/run_redteam.py                   # 감지 12/12, 오탐 0 → exit 0
+python3 eval/run_redteam.py                   # 감지 13/13, 오탐 0 → exit 0
 python3 eval/run_chain.py && python3 eval/run_egress.py && python3 eval/run_recovery.py && python3 eval/run_invariants.py  # 랜섬웨어 4층, 전부 exit 0
 python3 eval/score_cases.py <감사로그> eval/runs-labels-20260922.json  # 실 run 분류 채점
 ```

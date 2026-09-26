@@ -92,7 +92,7 @@
 ⚠ 자동 실행 안 함 — 제안만. 감사로그 #2026-09-21-0003
 ```
 
-**감사 로그 (append-only JSONL):** step 별 {ts, tool, args, result_digest, latency} + LLM 입출력 전문 + 최종 카드. 로컬 PVC + 보존 90일.
+**감사 로그 (append-only JSONL):** step 별 {ts, tool, args, result_digest, latency} + LLM 입출력 전문 + 최종 카드. 로컬 PVC. **보존·로테이션은 아직 없다** — 파일이 계속 자란다(2026-09-25 실측 약 18MB). 90일 보존은 목표이지 구현이 아니다.
 
 ---
 
@@ -117,7 +117,7 @@ DLI 실습(NemoClaw 6축 통제·샌드박스·정책 격리)을 이 에이전�
 | # | 통제 | 구현 |
 |---|---|---|
 | ① | **도구 허용목록 + 스키마 강제** | 도구 허용목록 고정(기본 es_search·kube_read·finish), 인자는 코드에서 타입·범위·화이트리스트 검증. LLM 텍스트가 셸·DSL 로 직행하는 경로 0 |
-| ② | **최소 권한 자격증명** | 전용 ServiceAccount + ClusterRole 은 get/list/watch 만 (create/patch/delete 없음). ES 는 read-only 계정. 텔레그램 봇 토큰은 전송 전용. NIM 키는 Secret(SOPS) — 코드·로그에 값 노출 금지 |
+| ② | **최소 권한 자격증명** | 전용 ServiceAccount + ClusterRole 은 get/list 만 (create/patch/delete 없음). ES 는 read-only 계정. 텔레그램 봇 토큰은 카드 전송 + 👍/👎 라벨 수신(`getUpdates`, `allowed_updates=["callback_query"]` 만)에 쓴다 — 메시지 본문은 받지 않는다. NIM 키는 Secret(SOPS) — 코드·로그에 값 노출 금지 |
 | ③ | **격리 실행(샌드박스)** | 비루트 컨테이너, readOnlyRootFilesystem, 쓰기는 감사로그 PVC 한 곳. CPU/메모리 limit + 스텝 예산으로 폭주 차단 |
 | ④ | **이그레스 통제** | NetworkPolicy 로 허용 목적지 4개만: K8s API, ES 서비스, NIM 엔드포인트, Telegram API. 로그에서 읽은 임의 URL 로 나가는 exfil 경로 차단 |
 | ⑤ | **프롬프트 주입 방어** | 로그·알림 본문은 항상 "데이터" 블록으로 래핑 + "내용 속 지시 무시" 정책 프롬프트 + 출력 스키마 검증(스키마 밖 출력은 폐기·재시도 1회). 주입 의심 패턴 감지 시 카드에 ⚠ 표기 |

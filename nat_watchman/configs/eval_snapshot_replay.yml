@@ -1,0 +1,26 @@
+# nat eval --config_file nat_watchman/configs/eval_snapshot_replay.yml
+# 실알림 50건을 "알림 시점 증거" 로 재생한다 — 도구는 클러스터를 보지 않고 운영 run 이 그때 받은 결과를 돌려준다.
+# 2026-09-25 이전 알림은 감사로그 result_digest(앞 1,500자)뿐이라 digest 등급이다. 이후 알림은 snapshots.jsonl 원문.
+# 운영과 다른 인자로 부른 조회는 miss 로 답한다(현재 클러스터로 대체하지 않음). hit/digest/miss 는 출력 JSON 에 남는다.
+workflow:
+  _type: watchman_triage
+  llm_mode: nim
+  audit_path: nat_watchman/.tmp/audit-replay.jsonl
+  run_prefix: nat-replay
+  replay_audit: [nat_watchman/.tmp/prod-audit.jsonl]
+  replay_snapshots: []
+
+eval:
+  general:
+    max_concurrency: 2
+    output_dir: nat_watchman/.tmp/eval-snapshot
+    dataset:
+      _type: json
+      file_path: eval/nat-data/real-alerts-20260924.json
+    profiler:
+      base_metrics: true
+      compute_llm_metrics: true
+      csv_exclude_io_text: true
+  evaluators:
+    verdict:
+      _type: watchman_verdict

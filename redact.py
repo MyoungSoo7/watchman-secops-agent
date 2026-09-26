@@ -16,6 +16,9 @@ base64 는 정규식만으로는 해시·ID 와 구분되지 않으므로, **디
 판정한다(출력 가능 문자 비율·길이·16진수 제외). 그래서 오탐이 낮다.
 """
 import base64
+import hashlib
+import hmac
+import os
 import re
 
 # (규칙 id, 한글 라벨, 정규식) — 값 자체는 어디에도 기록하지 않는다.
@@ -83,7 +86,44 @@ def _b64_spans(text):
     return spans
 
 
-_PLACEHOLDER = re.compile(r"\[REDACTED:[a-z0-9_]+\]")
+_PLACEHOLDER = re.compile(r"\[REDACTED:[a-z0-9_]+\]|\[PII:[a-z_]+:[0-9a-f]{8}\]")
+
+# 개인정보(PII) — 시크릿과 달리 "누구였는지" 는 조사에 쓸모가 있다(같은 사람이 여러 번 나왔나).
+# 그래서 이메일·전화번호는 지우지 않고 키 붙은 HMAC 으로 가명화한다: 같은 값 → 같은 자리표시자.
+# 키는 PII_KEY 환경변수, 없으면 프로세스마다 새로 뽑는다(재시작하면 대응이 끊긴다 — 의도한 것).
+# 주민등록번호는 대응도 남기지 않고 지운다. 외부로 나가는 관문(LLM·가드·카드·메일)에서만 쓴다.
+PII_RULES = [
+    ("email", "이메일 주소",
+     re.compile(r"(?<![A-Za-z0-9._%+\-])[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,24}\b")),
+    ("kr_rrn", "주민등록번호", re.compile(r"(?<!\d)\d{6}-[1-4]\d{6}(?!\d)")),
+    ("kr_mobile", "휴대전화번호",
+     re.compile(r"(?<![\d\-])01[016789][\-. ]\d{3,4}[\-. ]\d{4}(?![\d\-])")),
+]
+PII_PSEUDONYMIZE = ("email", "kr_mobile")
+_PII_KEY = (os.environ.get("PII_KEY") or "").encode() or os.urandom(32)
+
+
+def pseudonym(rule, value):
+    """같은 값·같은 키면 같은 8자리. 키 없이는 되돌릴 수 없다(무차별 대입도 키가 필요)."""
+    d = hmac.new(_PII_KEY, f"{rule}:{value.strip().lower()}".encode("utf-8"), hashlib.sha256)
+    return f"[PII:{rule}:{d.hexdigest()[:8]}]"
+
+
+def _pii_spans(text):
+    holes = [(m.start(), m.end()) for m in _PLACEHOLDER.finditer(text)]
+    out = []
+    for rid, label, rx in PII_RULES:
+        for m in rx.finditer(text):
+            a, b = m.start(), m.end()
+            if not any(a < he and hs < b for hs, he in holes):
+                out.append((a, b, rid, label))
+    out.sort(key=lambda s: (s[0], -(s[1] - s[0])))
+    merged, end = [], -1
+    for sp in out:
+        if sp[0] >= end:
+            merged.append(sp)
+            end = sp[1]
+    return merged
 
 
 def _spans(text):
@@ -124,17 +164,28 @@ def scan(text):
     return hits
 
 
-def redact(text):
-    """(마스킹된 텍스트, 히트). 입력이 문자열이 아니면 그대로 돌려준다."""
+def redact(text, pii=False):
+    """(마스킹된 텍스트, 히트). 입력이 문자열이 아니면 그대로 돌려준다.
+    pii=True 면 시크릿을 먼저 가린 뒤 개인정보를 가명화한다(URL 비번이 이메일로 오인되지 않게
+    두 번에 나눈다 — 첫 패스의 자리표시자는 둘째 패스가 건드리지 않는다)."""
     if not isinstance(text, str):
         return text, []
-    spans = _spans(text)
+    text, hits = _apply(text, _spans(text), lambda rid, v: f"[REDACTED:{rid}]")
+    if pii:
+        text, h2 = _apply(text, _pii_spans(text),
+                          lambda rid, v: pseudonym(rid, v) if rid in PII_PSEUDONYMIZE
+                          else f"[REDACTED:{rid}]")
+        hits += h2
+    return text, hits
+
+
+def _apply(text, spans, repl):
     if not spans:
         return text, []
     out, prev, hits = [], 0, []
     for a, b, rid, label in spans:
         out.append(text[prev:a])
-        out.append(f"[REDACTED:{rid}]")
+        out.append(repl(rid, text[a:b]))
         hits.append({"rule": rid, "label": label, "length": b - a})
         prev = b
     out.append(text[prev:])

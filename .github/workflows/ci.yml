@@ -28,6 +28,7 @@ jobs:
           python3 -m unittest test_security_layers
           python3 -m unittest test_card_evidence
           python3 -m unittest test_logsrc
+          python3 -m unittest test_guardrail_view
 
       - name: 파이프라인 계약 충족 (mock, 결정적) — 10/10 (분류 정확도 아님)
         run: python3 eval/run_eval.py

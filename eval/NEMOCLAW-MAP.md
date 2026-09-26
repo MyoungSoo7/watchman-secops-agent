@@ -41,7 +41,7 @@ SPEC §6 과 SUBMISSION 정직 고지 5번이 미뤄 둔 "NemoClaw 공식 축과
 | Watchman 통제 (SPEC §6) | 공식 축 | 판정 | 차이 |
 |---|---|---|---|
 | ① 도구 허용목록 + 스키마 강제 | — | **없음 (Watchman 추가분)** | NemoClaw blueprint 주석: "PolicyFile schema does not support a `tool_policy` section". 가장 가까운 건 Network 의 바이너리·method·path 허용이지만 도구 호출 단위가 아니다 |
-| ② 최소 권한 자격증명 | Inference (credential isolation) · Providers | 부분 | 목적 같음, 수단 다름. 공식 스택은 에이전트가 키를 **보지 못하게**, Watchman 은 RBAC(get/list/watch)·ES read-only 로 **범위를 줄인다**. NIM 키는 파드 env 에 있다 |
+| ② 최소 권한 자격증명 | Inference (credential isolation) · Providers | 부분 | 목적 같음, 수단 다름. 공식 스택은 에이전트가 키를 **보지 못하게**, Watchman 은 RBAC(get/list)·ES read-only 로 **범위를 줄인다**. NIM 키는 파드 env 에 있다 |
 | ③ 격리 실행 | Process + Filesystem | 부분 (실질 등가) | runAsNonRoot(65534)·allowPrivilegeEscalation false·capabilities drop ALL·seccomp RuntimeDefault·readOnlyRootFilesystem(쓰기는 /data·/tmp). 공식은 Landlock 경로 단위 허용 + 정책 seccomp. 스텝 예산은 공식 대응 항목 없음 |
 | ④ 이그레스 통제 | Network (deny-by-default) | 부분~1:1 | 목적지 기본 거부는 같다. 공식은 L7(method·path)·호출 바이너리·SSRF 가드까지, NetworkPolicy 는 L3/L4 |
 | ⑤ 프롬프트 주입 방어 | — | **없음 (Watchman 추가분)** | 조회 범위의 공식 문서에 전용 층 없음. 수강 노트도 "샌드박스가 주입을 없애지 않는다". `network_middlewares` regex redact 는 유출 쪽이다 |

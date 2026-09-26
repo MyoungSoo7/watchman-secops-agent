@@ -95,6 +95,17 @@ class 동결과신고기한(unittest.TestCase):
         self.assertIn("키를 먼저 회전하지 말 것", card)
         self.assertNotIn("파드 재시작", card)
 
+    def test_호스트_Falco_경보엔_키회전이_아니라_노드동결이_나온다(self):
+        card = w.format_card(
+            _alert({"rule": "Read sensitive file untrusted", "source": "falco",
+                    "hostname": "david", "container_id": "host",
+                    "fd_name": "/etc/pam.d/common-session"}),
+            _result(["es"]))
+        self.assertIn("만지기 전에 동결", card)
+        self.assertIn("david 노드", card)
+        self.assertNotIn("키를 먼저 회전하지 말 것", card)
+        self.assertIn("신고 기한", card)
+
     def test_기한이_지나면_초과로_표시된다(self):
         card = w.format_card(_alert(FALCO_BPF, hours_ago=30), _result([]))
         self.assertIn("초과", card)

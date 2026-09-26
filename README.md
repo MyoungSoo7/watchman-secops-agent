@@ -1,6 +1,6 @@
 # Watchman(파수꾼)
 
-> **심사용 공개 스냅샷.** 개발 리포(비공개)의 `8628bec` 시점(2026-09-25)을 히스토리 없이 옮긴 사본이다.
+> **심사용 공개 스냅샷.** 개발 리포(비공개)의 `8a709bc` 시점(2026-09-26)을 히스토리 없이 옮긴 사본이다.
 > 변경점: 개인 이메일 마스킹, 내부 문서 2개(`request.md` 제출 초안·`docs/PRICING-DRAFT.md` 가격 초안) 제외. 코드·테스트·평가 하네스는 원본과 동일.
 
 Lemuel K3s 클러스터의 Alertmanager 알림을 받아 **로그 조회 → 원인 분류 → 조치 제안**을
@@ -15,8 +15,8 @@ Lemuel K3s 클러스터의 Alertmanager 알림을 받아 **로그 조회 → 원
 | 심사 축 | 한 줄 | 숫자 (실측) | 증거 |
 |---|---|---|---|
 | ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + 공식 Skill 패키징 | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
-| ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건) | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
-| ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **12/12** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전) · 테스트 **243** | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
+| ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건). "전부 오탐" 기본값은 같은 표본에서 **0/13**. 알림 시점 증거 재생 **9/13**·오격상 0/37 | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
+| ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **13/13** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전, 라이브는 12건 시점) · 테스트 **307** · 호스트 경보 E2E 카나리 결함 3건 수정 | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
 | ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · 미구현 1(Inference 키 격리, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
 
 키 없이 재현: `python3 -m unittest discover -p 'test_*.py'` · `python3 eval/run_redteam.py`. 미달·미측정은 [SUBMISSION.md 정직 고지](SUBMISSION.md#정직-고지-미달미측정미완)에 전부 적었다.
@@ -27,7 +27,7 @@ Lemuel K3s 클러스터의 Alertmanager 알림을 받아 **로그 조회 → 원
 python3 -m unittest test_watchman -v        # 통제 축 단위 테스트
 LLM_MODE=mock python3 watchman.py replay fixtures/kube-job-failed.json
 python3 eval/run_eval.py                     # 파이프라인 계약 충족(mock, 결정적) — 10/10 (분류 정확도 아님)
-python3 eval/run_redteam.py                  # 레드팀 감지 12/12 · 오탐 0 (exit 0 = CI 게이트)
+python3 eval/run_redteam.py                  # 레드팀 감지 13/13 · 오탐 0 (exit 0 = CI 게이트)
 python3 -m unittest test_security_layers    # 킬체인·유출통제·복구·인바리언트 단위 테스트
 python3 eval/run_chain.py                    # 킬체인 상관관계 — 2번째 알림에 승격, 오탐 4축 0
 python3 eval/run_egress.py                   # 유출 차단 7/7 · 오탐 0 · 마스킹 후 잔존 0
@@ -52,7 +52,7 @@ curl -X POST localhost:8687/alert -d @fixtures/velero-partial.json
 | 보고 싶은 것 | 어디를 보나 |
 |---|---|
 | **평가 1회전** — 파이프라인 계약 충족 표(10/10, mock) + 분류 정확도 채점 근거(live) | [eval/REPORT.md](eval/REPORT.md) · 재현 `python3 eval/run_eval.py` |
-| **레드팀(입력 축)** — 주입 감지 12/12 + 정상 오탐 0 결과표 | [eval/REDTEAM.md](eval/REDTEAM.md) · 재현 `python3 eval/run_redteam.py` |
+| **레드팀(입력 축)** — 주입 감지 13/13 + 정상 오탐 0 결과표 | [eval/REDTEAM.md](eval/REDTEAM.md) · 재현 `python3 eval/run_redteam.py` |
 | **OWASP Agentic Top 10 대응표** — ASI01~10별 통제·증거·못 막는 것, 레드팀 12건 ASI 태그 | [eval/OWASP-ASI-MAP.md](eval/OWASP-ASI-MAP.md) |
 | **유출 통제(출력 축)** — 카드·메일·감사로그로 나가는 비밀값 차단 7/7, 오탐 0, 마스킹 후 잔존 0 | `fixtures/egress/` · 재현 `python3 eval/run_egress.py` |
 | **킬체인 상관관계** — 개별로는 warning 인 4건이 *순서*로 랜섬웨어가 되는 승격 | `fixtures/chain/` · 재현 `python3 eval/run_chain.py` |
@@ -92,7 +92,7 @@ RBAC 경계 실측: jobs list 200 / secrets list 403 / pod delete 403.
 
 - `watchman.py` — 전부 (설정·도구·에이전트 루프·감사로그·webhook 서버)
 - `test_watchman.py` — 통제 ①③⑤ 검증 (인자 화이트리스트·스텝 예산·출력 스키마·데이터 래핑)
-- `fixtures/` — 실알림 모사(cases/·정상) + 레드팀 주입 뱅크(redteam/ 12건)
+- `fixtures/` — 실알림 모사(cases/·정상) + 레드팀 주입 뱅크(redteam/ 13건)
 - `eval/` — 평가·레드팀 하네스와 리포트 (run_eval.py · run_redteam.py · REPORT.md · REDTEAM.md)
 - `docs/architecture.md` — 아키텍처 다이어그램
 - `audit.jsonl` — append-only 감사 기록 (gitignore 대상)

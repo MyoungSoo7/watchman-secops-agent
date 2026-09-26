@@ -36,10 +36,24 @@ python3 eval/build_nat_dataset.py <prod-audit.jsonl>
 python3 eval/nat_kpi.py nat_watchman/.tmp/eval-real > eval/nat-kpi-<날짜>.md
 ```
 
+### 알림 시점 증거 재생
+
+```bash
+cp <prod-audit.jsonl> nat_watchman/.tmp/prod-audit.jsonl   # (+ 운영 /data/snapshots.jsonl 이 있으면 replay_snapshots 에)
+.venv/bin/nat eval --config_file nat_watchman/configs/eval_snapshot_replay.yml
+python3 eval/nat_kpi.py nat_watchman/.tmp/eval-snapshot
+```
+
+도구가 클러스터를 보지 않고, 운영 run 이 그 알림을 조사할 때 받은 결과를 (도구, 인자) 로 맞춰 돌려준다
+(`eval/snapshot_replay.py`). 운영은 2026-09-25 부터 LLM 에 넘긴 도구 결과 원문(마스킹 후)을
+`snapshots.jsonl` 에 남긴다(`SNAPSHOT_PATH`, 파일당 100MB 에서 `.1` 로 밀어냄). 그 전 알림은
+감사로그의 앞 1,500자 요약뿐이다. 운영과 다른 조회는 miss 로 답하고 현재 클러스터로 채우지 않는다.
+
 평가 중에는 텔레그램 카드·메일을 끈다(`TELEGRAM_BOT_TOKEN`·`SMTP_HOST` 를 빈 값으로 덮어씀).
 
 ## 한계
 
-- **재생은 현재 클러스터 상태로 조사한다.** 알림이 난 시점의 파드·로그와 다를 수 있다
-  (특히 이미 복구된 incident 는 증거가 사라져 있을 수 있다).
+- **`eval_real_alerts.yml` 재생은 현재 클러스터 상태로 조사한다.** 이미 복구된 incident 는 증거가
+  사라져 있다 — 알림 시점 재생(`eval_snapshot_replay.yml`)은 이 문제를 없애는 대신, 운영이 하지 않은
+  조회에는 답을 못 준다(miss).
 - 라벨은 사람이 블라인드로 단 것이고(`eval/real-labels-20260924.json`), 표본은 50건이다.

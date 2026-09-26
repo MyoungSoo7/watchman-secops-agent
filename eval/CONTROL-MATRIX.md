@@ -43,11 +43,13 @@ public endpoint is read-only (writes disabled)
 내부망 노드에서 NodePort (…101:30687)    POST /alert -> 403   # 이전엔 통과
 클러스터 내부 (watchman.agent-system.svc) POST /alert -> 400   # 가드 통과(= Alertmanager 경로 유지)
 ```
-> 정직 기재: Host 는 보내는 쪽이 정하는 값이라 **인증이 아니다.** 내부망에서 Host 를 `watchman.agent-system.svc` 로 위조하면 여전히 통과한다. 다음 단계는 Alertmanager `http_config.authorization` 웹훅 토큰.
+> 정직 기재: Host 는 보내는 쪽이 정하는 값이라 **인증이 아니다.** 내부망에서 Host 를 `watchman.agent-system.svc` 로 위조하면 여전히 통과한다. → **2026-09-24 해소**(`c567d78`): Alertmanager `http_config.authorization` 이 `Bearer` 웹훅 토큰을 보내고, Watchman 은 상수시간 비교로 검증한다. 운영 파드에 토큰이 설정돼 있음을 확인했다(값은 출력하지 않음).
 
 ### 통제③ — NetworkPolicy 이그레스, 라이브
 `watchman-egress`(podSelector app=watchman, policyTypes=[Egress]). 규칙은 **포트+목적지 허용목록**:
-DNS(kube-dns:53), K8s svc(10.43.0.0/16:443), 노드(192.168.219.0/24:443·6443), ES(logging ns:9200), 외부(0.0.0.0/0 **except 사설대역** :443·587 → NIM·SMTP).
+DNS(kube-dns:53), K8s API ClusterIP(/32:443), 컨트롤플레인 3대(/32:6443), 노드 6대 원격데스크톱 포트(/32:3389·3390, 인바리언트 I4 연결 확인용), ES(logging ns:9200), 외부(0.0.0.0/0 **except 사설대역** :443·587 → NIM·텔레그램·SMTP). *(2026-09-25 축소 반영 — 이전엔 서비스망 /16·노드망 /24)*
+
+> 정직 기재: 외부 443 은 도메인이 아니라 "사설망 제외 전체" 다. 임의 외부 URL 로의 유출을 막는 것은 이그레스가 아니라 **URL 을 여는 도구가 없다는 것**과 카드의 링크 미리보기 비활성화다.
 
 파드 내부 실측:
 ```

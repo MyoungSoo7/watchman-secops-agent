@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 _wm = None
 _wm_lock = threading.Lock()
+_snaps = {}  # (audit, snapshot) 경로 → snapshot_replay.Snapshots — 설정별 1회 적재
 _tl = threading.local()  # 워커 스레드별 호출 기록 — run 끼리 섞이지 않게
 
 
@@ -68,9 +69,27 @@ def _load_watchman(repo_dir: str, llm_mode: str, audit_path: str):
         import watchman as wm
 
         for name, fn in list(wm.TOOLS.items()):
-            wm.TOOLS[name] = _record_tool(name, fn)
+            wm.TOOLS[name] = _record_tool(name, _snapshot_tool(name, fn))
         _wm = wm
         return wm
+
+
+def _snapshot_tool(name, fn):
+    """스냅샷 재생 중이면 실제 도구 대신 알림 시점 기록을 준다. 아니면 그대로 통과."""
+
+    def wrapped(args):
+        cur = getattr(_tl, "snap", None)
+        return fn(args) if cur is None else cur.call(name, args)
+
+    return wrapped
+
+
+def _load_snapshots(audit_paths, snapshot_paths):
+    key = (tuple(audit_paths), tuple(snapshot_paths))
+    if key not in _snaps:
+        import snapshot_replay  # eval/ — _load_watchman 이 sys.path 에 넣는다
+        _snaps[key] = snapshot_replay.Snapshots(audit_paths, snapshot_paths)
+    return _snaps[key]
 
 
 def _record_tool(name, fn):
@@ -145,11 +164,17 @@ class WatchmanTriageConfig(FunctionBaseConfig, name="watchman_triage"):
     llm_mode: str = Field(default="nim", description="nim(실 NIM) | mock(결정적 대본, 키 불필요)")
     audit_path: str = Field(default="", description="감사로그 경로. 비우면 watchman 기본값")
     run_prefix: str = Field(default="nat", description="run id 접두사 — 운영 run 과 구분")
+    replay_audit: list[str] = Field(default_factory=list,
+                                    description="비어 있지 않으면 알림 시점 재생: 운영 감사로그(알림↔run, 요약 결과)")
+    replay_snapshots: list[str] = Field(default_factory=list,
+                                        description="알림 시점 재생용 도구 결과 원문(snapshots.jsonl)")
 
 
 @register_function(config_type=WatchmanTriageConfig)
 async def watchman_triage(config: WatchmanTriageConfig, builder: Builder):
     wm = _load_watchman(config.repo_dir, config.llm_mode, config.audit_path)
+    snaps = (_load_snapshots(config.replay_audit, config.replay_snapshots)
+             if config.replay_audit or config.replay_snapshots else None)
     seq = iter(range(1, 10**9))
 
     async def _triage(alert_json: str) -> str:
@@ -159,13 +184,17 @@ async def watchman_triage(config: WatchmanTriageConfig, builder: Builder):
         base = wm.MockLLM() if config.llm_mode == "mock" else wm.llm_chat_nim
         llm = _record_llm(wm, base)
         rec = []
+        cur = snaps.cursor_for(alert) if snaps else None
+        if snaps and cur is None:  # 기록이 없으면 현재 클러스터로 대체하지 않는다
+            return json.dumps({"run_id": run_id, "verdict": None, "partial": True,
+                               "snapshot": {"missing_run": True}}, ensure_ascii=False)
 
         def work():
-            _tl.rec = rec
+            _tl.rec, _tl.snap = rec, cur
             try:
                 return wm.run_agent(alert, llm=llm, run_id=run_id)
             finally:
-                _tl.rec = None
+                _tl.rec = _tl.snap = None
 
         t0 = time.time()
         res = await asyncio.to_thread(work) or {}
@@ -184,6 +213,8 @@ async def watchman_triage(config: WatchmanTriageConfig, builder: Builder):
             "completion_tokens": sum(e["completion_tokens"] for e in llms),
             "models": sorted({e["name"] for e in llms if e["status"] == "ok"}),
         }
+        if cur is not None:
+            out["snapshot"] = {"source_run": cur.run_id, **cur.stats}
         return json.dumps(out, ensure_ascii=False)
 
     yield FunctionInfo.from_fn(_triage, description=_triage.__doc__)

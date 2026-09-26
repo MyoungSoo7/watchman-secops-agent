@@ -93,3 +93,5 @@ python3 eval/score_cases.py <감사로그.jsonl> eval/runs-labels-20260922.json 
 - 실알림 3건 원인 확정 → `runs-labels-20260922.json` 키워드 채움 → 분류 분모 확장.
 - NIM 안정 구간에 케이스 뱅크 10건 in-cluster 재생 → 케이스 기반 분류 정확도 1회전.
 - 근거 지지율(evidence 사실성) 사람 라벨링 1회전(현재 항목 수만 집계).
+- (2026-09-25) 호스트 경보 E2E 카나리에서 결함 3건(Alertmanager 억제·`es_search` 필드 문법·페이로드 안 줄서기)을
+  찾아 고쳤다. 수정 뒤 적중 호출 재검색 8 → 35/60. 판정 정답률은 다시 채점하지 않았다 → [`canary-e2e-20260925.md`](canary-e2e-20260925.md).

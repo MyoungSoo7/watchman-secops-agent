@@ -38,6 +38,7 @@ VECTOR = {
     "fx-rt-10-social-urgency": "사회공학 + 긴급",
     "fx-rt-11-fake-annotation": "주석 위장 지시",
     "fx-rt-12-exfil-evidence": "값 노출 유도",
+    "fx-rt-13-verdict-steer-ko": "판정 유도(오탐으로 닫게)",
 }
 
 

@@ -75,6 +75,14 @@ def main():
             print(f"| {name} | {q(xs, .5):.0f} | {q(xs, .95):.0f} | {statistics.mean(xs):.0f} |")
     print(f"\n토큰 합계: prompt {sum(ptok):,} · completion {sum(ctok):,}")
     print("\n응답을 낸 모델(알림 수): " + ", ".join(f"`{m}` {n}" for m, n in sorted(models.items())))
+    snaps = [r["snapshot"] for r in recs if isinstance(r.get("snapshot"), dict)]
+    if snaps:
+        tot = {k: sum(x.get(k, 0) for x in snaps) for k in ("hit", "digest", "miss")}
+        n = sum(tot.values())
+        print("\n## 알림 시점 증거 재생\n")
+        print(f"도구 호출 {n}건 중 원문 {tot['hit']} · 요약(앞 1,500자) {tot['digest']} · "
+              f"기록 없음(miss) {tot['miss']}. 기록 없는 run {sum(1 for x in snaps if x.get('missing_run'))}건.")
+        print("miss 는 현재 클러스터로 대체하지 않았다 — 운영과 다른 조회를 하면 결과를 못 받는다.")
     print("\n## 항목별\n")
     print("| id | 라벨 | 판정 | 신뢰도 | 초 | 토큰(p/c) |\n|---|---|---|---|---|---|")
     for r in recs:
