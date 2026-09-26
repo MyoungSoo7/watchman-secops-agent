@@ -100,3 +100,8 @@ RBAC 경계 실측: jobs list 200 / secrets list 403 / pod delete 403.
 - `eval/` — 평가·레드팀 하네스와 리포트 (run_eval.py · run_redteam.py · REPORT.md · REDTEAM.md)
 - `docs/architecture.md` — 아키텍처 다이어그램
 - `audit.jsonl` — append-only 감사 기록 (gitignore 대상)
+
+## 라이선스
+
+**Apache License 2.0** ([LICENSE](LICENSE) · [NOTICE](NOTICE)).
+출품 요건이 "작동하는 데모와 **재현 가능한** 코드"이므로, 열람만 허용하던 초기 라이선스를 재현·재사용이 실제로 가능한 Apache-2.0 으로 전환했다(`skills/watchman-secops-triage/SKILL.md` 가 이미 선언하고 NVIDIA SkillEvaluator License Compliance 검증기가 통과시킨 것과 동일한 라이선스다).
