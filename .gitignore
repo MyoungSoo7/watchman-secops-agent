@@ -10,3 +10,4 @@ nat_watchman/.tmp/
 *.egg-info/
 snapshots.jsonl*
 .idea/
+.venv/
