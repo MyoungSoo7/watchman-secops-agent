@@ -24,10 +24,10 @@
 
 | 심사 축 | 한 줄 | 숫자 (실측) | 증거 |
 |---|---|---|---|
-| ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + 공식 Skill 패키징 | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
+| ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + **NeMo Guardrails 마이크로서비스(안전 가드 경유)** + 공식 Skill 패키징 + **NVIDIA OpenShell 샌드박스 실행(평가 경로, 운영 K8s·ES 읽기 전용 실관측)** | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
 | ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건). "전부 오탐" 기본값은 같은 표본에서 **0/13**. 알림 시점 증거 재생 **9/13**·오격상 0/37 | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
 | ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **13/13** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전, 라이브는 12건 시점) · 테스트 **307** · 호스트 경보 E2E 카나리 결함 3건 수정 | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
-| ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · 미구현 1(Inference 키 격리, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
+| ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · Inference 키 격리는 **운영 미적용, OpenShell 평가 경로에서 실측**(키·토큰·비번 3종 모두 자리표시자, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
 
 키 없이 재현: `python3 -m unittest discover -p 'test_*.py'` · `python3 eval/run_redteam.py`. 미달·미측정은 아래 **정직 고지**에 전부 적었다.
 
@@ -83,6 +83,14 @@
   아니라 503 재시도를 소진한 뒤 격리한 **회복 동작**(ROADMAP 리스크 #1의 실제 완화). 당시엔 3회 재시도였고
   2026-09-23 에 5회+백오프로 강화했다. 데모 세션(2026-09-24 00시) run 10건의 실행표는 같은 문서 §2.1 —
   완료 3 · 부분 결과 6(전부 NIM 429/503) · 복구 필요 1 을 그대로 실었다.
+- **NVIDIA OpenShell 샌드박스에서 같은 코드를 실행 (평가 경로, 2026-09-26, [`eval/openshell/`](eval/openshell/README.md)).**
+  OpenShell 0.1.1 의 BYOC 샌드박스(Landlock·기본 거부 네트워크 정책) 안에서 Watchman 을 그대로 돌렸다.
+  NIM 키·K8s SA 토큰·ES 비밀번호는 샌드박스 프로세스에 **자리표시자로만** 보이고, 실제 값은 OpenShell 프록시가 헤더에 넣는다.
+  egress 는 provider 규칙만 열려 있다. NIM 은 POST 를, 운영 K8s 는 GET 만, ES 는 `GET` 과 `POST /logstash-*/_search` 만 통과한다(L7).
+  프로브 결과는 허용 2건(파드 목록 200·로그 검색 200)과 거부 4건이다. K8s DELETE·ES 인덱스 삭제·`_bulk` 는 L7 에서 403 이다.
+  secrets 조회는 L7 은 통과했지만 **K8s RBAC 가 403 으로 막았다**. 두 층이 서로 다른 것을 막는다.
+  같은 주입 픽스처를 리플레이하면 에이전트가 도구 4회로 운영 클러스터를 실제로 관측한다(증거 3/5). 주입된 지시는 따르지 않았다.
+  거부 기록은 OCSF 로그에 남는다. **운영 파드는 여전히 K3s 에서 직접 돈다** — 이건 샌드박스화 완료가 아니라 "같은 코드가 OpenShell 안에서 무엇을 막는가" 의 실측이다.
 - **Build Skill API 어댑터 — 실호출 기록 보유.** 기본 OFF 어댑터(`skill_query` 도구 +
   `skill_call` 감사기록)를 심어두고, `NVIDIA_SKILL_ENABLED=1` 로 켠 상태에서 **실호출 1건을
   감사로그에 실제로 남겼다**: `skill_call` → endpoint `integrate.api.nvidia.com/v1/chat/completions`,
@@ -194,6 +202,9 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
 - **주입 판정 2층 = 정규식 + NVIDIA 안전 가드.** `llama-3.1-nemotron-safety-guard-8b-v3` 에 주입 전용 범주를 지시문으로 주입해
   알림 문구를 2차 판정한다. 후보 3종을 같은 표본으로 재서 골랐다(jailbreak-detect 0/22 로 탈락). 정규식이 놓친 우회 9건을 가드가,
   가드가 놓친 도구 오용 2건을 정규식이 잡는다. 판정만 하고 막지 않는다 — 실패는 `guard_error` 로 남고 조사는 계속된다.
+- **가드는 NeMo Guardrails 마이크로서비스를 거친다(2026-09-26).** `nemo-microservices/guardrails:25.12` 를 운영에 띄우고
+  같은 모델·같은 프롬프트를 config-store 로 옮겼다. 두 경로가 모두 답한 샘플에서 판정 일치 v3 42/42 · 3.5 44/44.
+  게이트웨이가 죽으면 직접 호출로 떨어진다. [guardrails-parity](eval/guardrails-parity-20260926.md) · [deploy/guardrails](deploy/guardrails/README.md)
 - **확장성 설계 = Build Skill API OFF 어댑터.** 런타임을 안 건드리고 미래 요건에 선제 대응.
   게이트 하나로 조사 도구가 늘고 호출이 감사로그에 남는다 — 독창적 리스크 관리.
 
@@ -208,7 +219,7 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
 
 | 지금의 약점 (고지 번호) | 로컬 NIM 이후 |
 |---|---|
-| Inference 키 비노출 미구현 — 파드가 `NVIDIA_API_KEY` 를 env 로 쥔다 (정직 고지 5, `eval/NEMOCLAW-MAP.md` §3-1) | 에이전트 파드에서 키를 뺀다. 모델 내려받기 자격증명은 추론 서버 쪽에만 둔다 → OpenShell Inference 도메인과 같은 구조 |
+| Inference 키 비노출이 운영엔 미적용 — 파드가 `NVIDIA_API_KEY` 를 env 로 쥔다 (정직 고지 5, `eval/NEMOCLAW-MAP.md` §3-1. OpenShell 평가 경로에선 자리표시자로 실측) | 에이전트 파드에서 키를 뺀다. 모델 내려받기 자격증명은 추론 서버 쪽에만 둔다 → OpenShell Inference 도메인과 같은 구조 |
 | 근거가 실린 프롬프트가 클러스터 밖으로 나간다 — 허용 채널은 양방향 (`eval/NEMOCLAW-MAP.md` §4) | NetworkPolicy 이그레스 허용 목적지 4곳 → 3곳(K8s API·ES·Telegram). 로그 근거가 외부로 나가는 경로가 없어진다 |
 | NIM 측 429·503 으로 부분 결과 (정직 고지 7) | 호출 한도가 우리 GPU 용량이 된다 — 통제할 수 없던 변수가 통제할 수 있는 변수로 바뀐다 |
 
@@ -243,9 +254,11 @@ E2E 가 **이미 돈다**: 실 알림 → 조사 → 분류 → 카드. 그 위�
    rules 페이지 자체는 공개 웹에 인덱싱돼 있지 않아(초청/한국 로컬 추정) 요건 텍스트의 출처 등급은
    "팀 브리핑(내부 공식)"이다(`eval/CHALLENGE-SOURCE-SEARCH.md`).
 4. **S1 관제 뷰**는 SHOULD(별도 진행). 없어도 제출 성립 — `/state` JSON 을 문서에 노출.
-5. **NemoClaw 공식 축 대조 — 완료(2026-09-25, `eval/NEMOCLAW-MAP.md`).** Watchman 은 NemoClaw/OpenShell 런타임 위에서 돌지 않고,
+5. **NemoClaw 공식 축 대조 — 완료(2026-09-25, `eval/NEMOCLAW-MAP.md`).** 운영 Watchman 은 NemoClaw/OpenShell 런타임 위에서 돌지 않고,
    그 통제 모델을 K3s 네이티브로 **재구현**했다. OpenShell 4도메인 중 Filesystem·Network·Process 는 부분~실질 등가,
-   **Inference(에이전트가 API 키를 못 보게 하는 구조)는 미구현** — 파드가 NIM 키를 env 로 쥔다. 도구 허용목록·주입 방어는
+   **Inference(에이전트가 API 키를 못 보게 하는 구조)는 운영에 미적용** — 운영 파드는 NIM 키를 env 로 쥔다.
+   2026-09-26 에 같은 코드를 **OpenShell 0.1.1 샌드박스(평가 경로)** 에서 돌려 키·토큰·비밀번호가 자리표시자로만 보이고
+   쓰기 요청이 L7 에서 거부됨을 실측했다(`eval/openshell/`). 운영 이전은 하지 않았다 — OpenShell 이 스스로 Alpha 라고 밝힌다. 도구 허용목록·주입 방어는
    공식 정책 스키마에 없는 Watchman 추가분이다. 그래서 "NemoClaw 적용·준수" 라고 쓰지 않는다.
 6. **정기 인바리언트(P9) 5항목 중 3항목은 운영에서 "미확인(UNKNOWN)" 으로 답한다 — 의도된 한계.**
    매일 09시 KST 실측(2026-09-23 첫 가동): I4 원격데스크톱·I5 백업 신선도는 PASS 로 실측되지만,

@@ -1,0 +1,31 @@
+# OpenShell provider profile — ECK Elasticsearch 로그 검색 전용 (Watchman es_search 용).
+# 샌드박스는 ES_PASS 에 자리표시자만 받는다. 코드가 만든 Basic 헤더(watchman:<자리표시자>)를
+# 프록시가 풀어 진짜 비밀번호로 바꾼다. ES 롤(watchman_read)도 읽기 전용이다.
+#
+# 허용: GET/HEAD 전부 + POST 는 logstash-*/_search 하나. _bulk·_delete_by_query·인덱스 삭제 등은
+# 메서드·경로가 규칙에 없어 L7 에서 거부된다. 호스트는 운영과 같은 logs-es-http.logging.svc
+# (ECK 인증서 SAN) — louise /etc/hosts 에 ClusterIP 로 매핑했다.
+id: es-watchman-ro
+display_name: Elasticsearch logs (Watchman, search only)
+description: ECK logs cluster, GET + POST logstash-*/_search only, python3 only
+category: other
+credentials:
+  - name: password
+    description: ES user watchman password (role watchman_read)
+    env_vars: [ES_PASS]
+    required: true
+    auth_style: basic
+    header_name: authorization
+discovery:
+  credentials: [password]
+endpoints:
+  - host: logs-es-http.logging.svc
+    port: 9200
+    protocol: rest
+    enforcement: enforce
+    allowed_ips: [10.43.136.97/32]
+    rules:
+      - allow: { method: GET, path: "**" }
+      - allow: { method: HEAD, path: "**" }
+      - allow: { method: POST, path: "/logstash-*/_search" }
+binaries: [/usr/local/bin/python3*, /usr/bin/python3*]

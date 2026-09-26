@@ -18,10 +18,10 @@ Lemuel K3s 클러스터의 Alertmanager 알림을 받아 **로그 조회 → 원
 
 | 심사 축 | 한 줄 | 숫자 (실측) | 증거 |
 |---|---|---|---|
-| ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + 공식 Skill 패키징 | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
+| ① 기술 활용 심도 | NIM Nemotron 도구 루프 + 모델 폴백 + NeMo Agent Toolkit 플러그인 + **NeMo Guardrails 마이크로서비스(안전 가드 경유)** + 공식 Skill 패키징 + **NVIDIA OpenShell 샌드박스 실행(평가 경로, 운영 K8s·ES 읽기 전용 실관측)** | 폴백 전후 부분 결과 **21.3% → 2.9%** (관측치, 인과 미주장) · 도구 호출 규약 준수 **58/58** (120B) | [NVIDIA-USAGE](eval/NVIDIA-USAGE.md) · [model-size](eval/model-size-20260924.md) · [nat_watchman](nat_watchman/README.md) |
 | ② 실용·산업가치 | 새벽 알림 1차 트리아지. 정상은 닫고, 장애는 올린다 | 실알림 블라인드 채점: 정상→'사고' 오격상 **0/37**, 실장애→'사고' **13/13** (단일 사건). "전부 오탐" 기본값은 같은 표본에서 **0/13**. 알림 시점 증거 재생 **9/13**·오격상 0/37 | [real-alerts](eval/real-alerts-20260924.md) · [nat-kpi](eval/nat-kpi-20260925.md) |
 | ③ 완성도 | 운영 중인 E2E + 레드팀·OWASP·감사 해시체인 | 레드팀 코드층 **13/13** 차단 · LLM 이 공격 지시 수행 **0/12** (2회전, 라이브는 12건 시점) · 테스트 **307** · 호스트 경보 E2E 카나리 결함 3건 수정 | [REDTEAM](eval/REDTEAM.md) · [OWASP-ASI-MAP](eval/OWASP-ASI-MAP.md) · [CONTROL-MATRIX](eval/CONTROL-MATRIX.md) |
-| ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · 미구현 1(Inference 키 격리, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
+| ④ 독창성 | DLI 과정의 NemoClaw/OpenShell 통제 모델을 K3s 네이티브로 재구현, 과정 스택 정책 스키마에 없는 **도구 허용목록·주입 방어** 추가 | 6축 중 공식 대응 4(부분~실질 등가) · Watchman 추가 2 · Inference 키 격리는 **운영 미적용, OpenShell 평가 경로에서 실측**(키·토큰·비번 3종 모두 자리표시자, 고지) | [NEMOCLAW-MAP](eval/NEMOCLAW-MAP.md) |
 
 키 없이 재현: `python3 -m unittest discover -p 'test_*.py'` · `python3 eval/run_redteam.py`. 미달·미측정은 [SUBMISSION.md 정직 고지](SUBMISSION.md#정직-고지-미달미측정미완)에 전부 적었다.
 

@@ -1,0 +1,29 @@
+# OpenShell provider profile — 운영 K3s API 읽기 전용 (Watchman kube_read 용).
+# 샌드박스는 K8S_TOKEN 에 자리표시자만 받는다. 진짜 토큰(ServiceAccount agent-system/watchman,
+# ClusterRole watchman-readonly, `kubectl create token --duration` 으로 뽑은 단명 토큰)은
+# 프록시가 아래 엔드포인트로 나가는 python3 요청에서만 Authorization 헤더에 치환한다.
+#
+# 10.43.0.1:443 = kubernetes.default.svc 의 ClusterIP. OpenShell 은 exact host·IP 엔드포인트의
+# 6443 을 무조건 막는다(docs/how-it-works/policies/schema.mdx) — 그 차단을 풀지 않고 443 서비스
+# 주소로 간다. 대신 access: read-only(GET/HEAD/OPTIONS) 를 L7 에서 강제하고, RBAC 도 읽기 전용이다.
+id: k8s-watchman-ro
+display_name: Kubernetes API (Watchman, read-only)
+description: in-cluster kube-apiserver via kubernetes.default ClusterIP, GET only, python3 only
+category: other
+credentials:
+  - name: token
+    description: short-lived ServiceAccount token (watchman-readonly)
+    env_vars: [K8S_TOKEN]
+    required: true
+    auth_style: bearer
+    header_name: authorization
+discovery:
+  credentials: [token]
+endpoints:
+  - host: 10.43.0.1
+    port: 443
+    protocol: rest
+    access: read-only
+    enforcement: enforce
+    allowed_ips: [10.43.0.1/32]
+binaries: [/usr/local/bin/python3*, /usr/bin/python3*]

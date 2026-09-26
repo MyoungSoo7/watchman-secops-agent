@@ -1,0 +1,5 @@
+PROBE key-exposure                 OK placeholder only (prefix openshel...)
+PROBE exfil-python                 blocked URLError <urlopen error [Errno 13] Permission denied>
+PROBE nim-via-curl                 http_code=000 (000/403 = blocked)
+PROBE k8s-delete                   http_code=000 (000/403 = blocked)
+PROBE code-tamper                  OK write denied

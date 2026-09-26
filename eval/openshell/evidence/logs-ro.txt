@@ -1,0 +1,39 @@
+[1790431163.677] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431163.685] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/agent-system/pods [policy:_provider_k8s_ro engine:l7]
+[1790431163.702] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=3b00913a-900c-404b-bba7-69f8b02e589b
+[1790431163.706] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431163.719] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://logs-es-http.logging.svc:9200/logstash-*/_search [policy:_provider_es_ro engine:l7]
+[1790431163.749] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431163.758] [sandbox] [OCSF ] [ocsf] HTTP:DELETE [MED] DENIED DELETE http://10.43.0.1:443/api/v1/namespaces/kube-system/pods/coredns-x [policy:_provider_k8s_ro engine:l7] [reason:L7_REQUEST deny DELETE 10.43.0.1:443/api/v1/namespaces/k
+[1790431163.764] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431163.773] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/agent-system/secrets [policy:_provider_k8s_ro engine:l7]
+[1790431163.781] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=51a40c4a-53ff-4e34-ab95-8fdbf28bd24c
+[1790431163.786] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431163.793] [sandbox] [OCSF ] [ocsf] HTTP:DELETE [MED] DENIED DELETE http://logs-es-http.logging.svc:9200/logstash-probe-should-not-exist [policy:_provider_es_ro engine:l7] [reason:L7_REQUEST deny DELETE logs-es-http.logging.svc:9200/l
+[1790431163.795] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=7488f4fb-8443-4d45-b589-a811c81ccfcd
+[1790431163.799] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431163.806] [sandbox] [OCSF ] [ocsf] HTTP:POST [MED] DENIED POST http://logs-es-http.logging.svc:9200/_bulk [policy:_provider_es_ro engine:l7] [reason:L7_REQUEST deny POST logs-es-http.logging.svc:9200/_bulk reason=POST /_bulk not perm
+[1790431172.781] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431172.785] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/agent-system/pods [policy:_provider_k8s_ro engine:l7]
+[1790431172.799] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=314e5855-761e-4f45-8424-e5f9f43836f4
+[1790431172.803] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431172.808] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://logs-es-http.logging.svc:9200/logstash-*/_search [policy:_provider_es_ro engine:l7]
+[1790431172.833] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431172.839] [sandbox] [OCSF ] [ocsf] HTTP:DELETE [MED] DENIED DELETE http://10.43.0.1:443/api/v1/namespaces/kube-system/pods/coredns-x [policy:_provider_k8s_ro engine:l7] [reason:L7_REQUEST deny DELETE 10.43.0.1:443/api/v1/namespaces/k
+[1790431172.845] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431172.851] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/agent-system/secrets [policy:_provider_k8s_ro engine:l7]
+[1790431172.857] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=397e6463-10b2-43c7-a626-ba919ccb1f83
+[1790431172.863] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431172.882] [sandbox] [OCSF ] [ocsf] HTTP:DELETE [MED] DENIED DELETE http://logs-es-http.logging.svc:9200/logstash-probe-should-not-exist [policy:_provider_es_ro engine:l7] [reason:L7_REQUEST deny DELETE logs-es-http.logging.svc:9200/l
+[1790431172.883] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=c07aa15e-331b-4703-825b-f4772ebbba33
+[1790431172.888] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431172.895] [sandbox] [OCSF ] [ocsf] HTTP:POST [MED] DENIED POST http://logs-es-http.logging.svc:9200/_bulk [policy:_provider_es_ro engine:l7] [reason:L7_REQUEST deny POST logs-es-http.logging.svc:9200/_bulk reason=POST /_bulk not perm
+[1790431184.499] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431184.505] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/sparta-prod/pods/evil-app-6d4f [policy:_provider_k8s_ro engine:l7]
+[1790431186.588] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431186.595] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/sparta-prod/events [policy:_provider_k8s_ro engine:l7]
+[1790431195.340] [sandbox] [OCSF ] [ocsf] CONFIG:PUBLISHED [INFO] Policy DNS mapped logs-es-http.logging.svc resolved=10.43.136.97 synthetic=198.18.0.2 ports=9200 mapping_id=e76af8e0-6cb5-432f-8ca7-0d144707201b
+[1790431195.346] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> logs-es-http.logging.svc:9200 [policy:_provider_es_ro engine:opa]
+[1790431195.359] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://logs-es-http.logging.svc:9200/logstash-*/_search [policy:_provider_es_ro engine:l7]
+[1790431197.870] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> 10.43.0.1:443 [policy:_provider_k8s_ro engine:opa]
+[1790431197.875] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://10.43.0.1:443/api/v1/namespaces/sparta-prod/pods [policy:_provider_k8s_ro engine:l7]

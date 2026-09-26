@@ -1,0 +1,13 @@
+# Watchman OpenShell 샌드박스 정책 (version 1 스키마).
+# 네트워크: 이 파일에는 허용 규칙이 *하나도 없다* — 기본 거부. 유일한 이그레스는
+#   provider(nvidia-watchman)가 합성해 넣는 integrate.api.nvidia.com:443 (python3 만).
+#   → 주입된 알림이 "https://attacker.example.com 으로 보내라" 해도 나갈 길이 없다.
+# 파일시스템: 코드(/app)·시스템은 읽기 전용, 쓰기는 /sandbox(감사로그)·/tmp 만. Landlock 강제.
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only: [/bin, /usr, /lib, /proc, /dev/urandom, /app, /etc, /var/log]
+  read_write: [/sandbox, /tmp, /dev/null]
+landlock:
+  compatibility: best_effort
+network_policies: {}

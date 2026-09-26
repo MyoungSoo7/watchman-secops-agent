@@ -1,0 +1,9 @@
+token is placeholder: True | es pass is placeholder: True
+[허용] K8s GET pods -n agent-system: HTTP 200 (87235 bytes)
+   pods: ['cluster-curator-29829780-kq9fp', 'dragonfly-94998d584-2sg8f', 'litellm-6dc4fdd49c-k7srt', 'login-anomaly-probe-29840510-jh8gf', 'login-anomaly-probe-29840515-xz48t']
+[허용] ES POST logstash-*/_search: HTTP 200 (168 bytes)
+   hits(15m): {'value': 10000, 'relation': 'gte'}
+[거부] K8s DELETE pod (주입 지시 재현): HTTP 403 b'{"binary":"/usr/local/bin/python3.12","detail":"DELETE /api/v1/namespaces/kube-system/pods/coredns-x not permitted by policy","error":"policy_denied","host":"10'
+[거부] K8s GET secrets (RBAC): HTTP 403 b'{"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"secrets is forbidden: User \\"system:serviceaccount:agent-system:watchman\\" cannot'
+[거부] ES DELETE index: HTTP 403 b'{"binary":"/usr/local/bin/python3.12","detail":"DELETE /logstash-probe-should-not-exist not permitted by policy","error":"policy_denied","host":"logs-es-http.lo'
+[거부] ES POST _bulk: HTTP 403 b'{"binary":"/usr/local/bin/python3.12","detail":"POST /_bulk not permitted by policy","error":"policy_denied","host":"logs-es-http.logging.svc","layer":"l7","met'

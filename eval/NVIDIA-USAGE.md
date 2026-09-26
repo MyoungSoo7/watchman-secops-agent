@@ -120,6 +120,32 @@ ROADMAP §1.1 의 "Build Skill API 실사용 + 호출 기록" 요건을 **기본
 호출은 감사로그 `guard_verdict`(모델·판정·지연 ms) / `guard_error` 로 남고 `/state` 합계 `guard_checks`·`guard_flags`·`guard_errors` 로 보인다.
 실측·후보 비교·한계: `eval/guard-20260924.md`.
 
+## 3.6 NeMo Guardrails 마이크로서비스 경유 (2026-09-26)
+
+위 가드 호출은 이제 **NeMo Guardrails 마이크로서비스**(`nvcr.io/nvidia/nemo-microservices/guardrails:25.12`)를 거친다.
+운영 `agent-system` 에 `nemo-guardrails` 파드로 떠 있고, watchman 은 `GUARDRAILS_URL` 로 `/v1/guardrail/checks` 를 부른다.
+config-store(`deploy/guardrails/`)에 `injection-v3`·`injection-35` 두 설정이 있고, 각각 `content safety check input` 입력 레일에
+같은 가드 모델·같은 프롬프트(`gen.py` 가 `GUARD_TEMPLATE` 에서 생성, 테스트로 동기 검사)를 건다.
+
+- 판정은 `activated_rails` 로그의 행위 반환값(`allowed`·`policy_violations`)에서 읽는다 — Guardrails 는 파서 예외도 `blocked` 로 돌려주기 때문.
+- 스톡 파서(`nemoguard_parse_prompt_safety`)는 JSON 이 아닌 응답을 전부 unsafe 로 본다. 3.5 가 평문으로 답하면 정상 알림이 주입이 되므로 파서를 교체했다.
+- 게이트웨이에 연결이 안 되면 같은 모델을 직접 부른다. 감사로그·스팬에 `via: guardrails | direct` 가 남는다.
+- 동등성: 두 경로가 모두 답한 샘플에서 판정 일치 v3 **42/42**, 3.5 **44/44** — `eval/guardrails-parity-20260926.md`.
+
+## 3.7 NVIDIA OpenShell 샌드박스 실행 — 평가 경로 (2026-09-26)
+
+같은 `watchman.py` 를 [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) 0.1.1 샌드박스(BYOC 이미지, Docker 드라이버, louise 노드)에서 실행했다.
+운영 파드는 바뀌지 않았다. 전체 절차·원자료는 [`eval/openshell/README.md`](openshell/README.md) 에 있다.
+
+| 항목 | 실측 |
+| --- | --- |
+| 자격증명 3종(NIM 키·K8s SA 토큰·ES 비밀번호) | 프로세스 env 에는 **자리표시자**만 있다. 실제 값은 프록시가 요청 헤더에 넣는다 |
+| egress | 정책 `network_policies: {}`(기본 거부). provider 가 붙인 규칙만 열린다. 바이너리는 python3 로 한정된다 |
+| 허용 | NIM `POST /v1/chat/completions` · K8s `GET pods` 200 · ES `POST /logstash-*/_search` 200 |
+| 거부 | K8s DELETE · ES 인덱스 DELETE · ES `_bulk` → L7 403 `policy_denied`. secrets GET → K8s RBAC 403 |
+| 주입 리플레이 | 가드 unsafe · 주입 패턴 4 · 도구 4회 실관측 · 판정 '의심' · 증거 3/5 · 주입 지시 미이행 |
+| 감사 | OCSF 로그 `HTTP:DELETE DENIED … [engine:l7]` 등 (`evidence/logs-ro.txt`) |
+
 ## 4. 재현 명령
 
 ```bash

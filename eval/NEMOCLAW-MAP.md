@@ -2,10 +2,13 @@
 
 SPEC §6 과 SUBMISSION 정직 고지 5번이 미뤄 둔 "NemoClaw 공식 축과 1:1 매핑" 이다.
 
-**결론 한 줄.** Watchman 은 NemoClaw/OpenShell 런타임 위에서 돌지 않는다. 지정교육(DLI S-FX-43)의
+**결론 한 줄.** 운영 Watchman 은 NemoClaw/OpenShell 런타임 위에서 돌지 않는다. 지정교육(DLI S-FX-43)의
 통제 모델을 **K3s 네이티브 통제로 재구현**했다. OpenShell 4개 도메인 중 3개(Filesystem·Network·Process)는
-부분~실질 등가이고, **Inference(키 비노출)는 미구현**이다. 과정 스택의 정책 스키마에 없는 2개(도구 허용목록·주입 방어)를
+부분~실질 등가이고, **Inference(키 비노출)는 운영에 미적용**이다. 과정 스택의 정책 스키마에 없는 2개(도구 허용목록·주입 방어)를
 더했다. 그래서 "NemoClaw 적용·준수" 가 아니라 "같은 위협 모델의 재구현" 이라고 쓴다.
+
+**2026-09-26 갱신 — OpenShell 평가 경로.** 같은 코드를 OpenShell 0.1.1 샌드박스 안에서 돌려 아래 §3 의 빈칸 1·2·4·5(OCSF 부분)를
+실측으로 메웠다(`eval/openshell/README.md`). 운영 배포는 바뀌지 않았으므로 위 결론은 **운영 기준으로 그대로** 둔다.
 
 ## 0. 출처와 등급
 
@@ -55,6 +58,14 @@ SPEC §6 과 SUBMISSION 정직 고지 5번이 미뤄 둔 "NemoClaw 공식 축과
 4. **L7 egress 규칙** — method·path, SSRF 가드(loopback·private·link-local).
 5. **Gateway authentication 층**(NemoClaw) · **OCSF 표준 이벤트**.
 
+> **평가 경로에서의 상태 (2026-09-26, `eval/openshell/`).** OpenShell 0.1.1 샌드박스 안에서 같은 코드를 돌린 결과다.
+> 1 → NIM 키·K8s 토큰·ES 비밀번호 모두 프로세스에는 자리표시자다. 실제 값은 프록시가 헤더에 넣는다.
+> 2 → 같은 목적지라도 python3 는 허용되고 curl 은 거부된다.
+> 3 → 파일시스템은 Landlock 경로 정책이다(쓰기는 `/sandbox`·`/tmp` 만). 정책 기반 seccomp 는 이번에 따로 검증하지 않았다.
+> 4 → K8s 는 GET 만, ES 는 GET 과 `_search` 만 허용된다. DELETE·`_bulk` 는 L7 에서 403 이다.
+> 5 → OCSF 이벤트(`NET:OPEN`·`HTTP:*`)가 남는다. Gateway authentication 층은 NemoClaw 쪽이라 해당 없음.
+> **운영 파드에는 아직 적용하지 않았다.**
+
 ## 4. 수강 실습의 열린 실패 모드 두 개 — Watchman 에 대입
 
 | 실습에서 남은 구멍 (수강 노트) | Watchman | 상태 |
@@ -65,7 +76,8 @@ SPEC §6 과 SUBMISSION 정직 고지 5번이 미뤄 둔 "NemoClaw 공식 축과
 ## 5. 제출 문구
 
 > DLI 과정의 NemoClaw/OpenShell 통제 모델(Filesystem·Network·Process·Inference)을 K3s 네이티브 통제로 재구현했다.
-> 3개 도메인은 부분~실질 등가이고 Inference 키 격리는 미구현이다(고지). 과정 스택의 정책 스키마에 없는
+> 3개 도메인은 부분~실질 등가이고 Inference 키 격리는 운영에 미적용이다(고지). 같은 코드를 OpenShell 샌드박스(평가 경로)에서
+> 돌려 키 격리·바이너리 신원·L7 egress·OCSF 를 실측했다. 과정 스택의 정책 스키마에 없는
 > 도구 허용목록과 프롬프트 주입 방어를 더했다.
 
 쓰지 않는 표현: "NemoClaw 적용", "OpenShell 준수". OpenShell 은 README 에서 스스로 Alpha("single-player mode"),

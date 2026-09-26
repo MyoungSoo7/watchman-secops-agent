@@ -1,0 +1,26 @@
+# OpenShell provider profile — NVIDIA NIM(build.nvidia.com) 전용, Watchman 용으로 좁힌 사본.
+# 원본: github.com/NVIDIA/OpenShell/blob/main/providers/nvidia.yaml (Apache-2.0)
+# 바뀐 점: id, binaries 를 python3 로 한정(curl 제거 — 샌드박스 안 curl 은 NIM 에 못 간다).
+# 샌드박스는 NVIDIA_API_KEY 에 *불투명 placeholder* 만 받고, 진짜 키는 OpenShell 프록시가
+# integrate.api.nvidia.com 으로 나가는 요청에서만 Authorization 헤더에 치환해 넣는다.
+id: nvidia-watchman
+display_name: NVIDIA NIM (Watchman)
+description: build.nvidia.com hosted NIM, python3 only
+category: inference
+inference_capable: true
+credentials:
+  - name: api_key
+    description: NVIDIA API key
+    env_vars: [NVIDIA_API_KEY]
+    required: true
+    auth_style: bearer
+    header_name: authorization
+discovery:
+  credentials: [api_key]
+endpoints:
+  - host: integrate.api.nvidia.com
+    port: 443
+    protocol: rest
+    access: read-write
+    enforcement: enforce
+binaries: [/usr/local/bin/python3*, /usr/bin/python3*]
