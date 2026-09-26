@@ -2,6 +2,13 @@
 
 > 3인 팀. 각자 이미 잘하는 것 위주로 모듈을 통째로 소유하고, 경계는 read-only API 계약으로만 만난다.
 > 기능 번호(FR-N)·마일스톤(M-N)은 [SPEC.md](SPEC.md) 기준.
+>
+> **2026-09-26 갱신.** 역할 분담 자체는 그대로다. 다만 SPEC 이 소스에 맞춰 갱신되면서 FR 목록이 늘었다
+> (FR-25~FR-32 구현분 문서화 + §10.5 NVIDIA 생태계 연동 FR-33~FR-36). 이 문서에서 달라진 것 두 가지:
+> ① **FR-16 은 Unity 가 아니라 단일 HTML 프로토로 착지**했고(`web/console-map.html`), 운영 정본 관제 뷰는
+>    에이전트에 내장된 read-only 콘솔(FR-32, `GET /` · `/view` · `/trace`)이다. Unity·VR 은 STRETCH.
+> ② **FR-17(임베디드 상태등)은 미착수** — 폴링 예제만 `viewer/poll_state.py` 에 있다.
+> 현재 FR 상태의 정본은 [SPEC.md](SPEC.md) §10 이다.
 
 ## 팀 구성
 
@@ -89,7 +96,7 @@ Codex Pro 3개는 여기서 힘을 쓴다 — 케이스 생성·라벨링·프�
 
 | # | 검증 | 절차 | 통과 기준 |
 |---|---|---|---|
-| T3-1 | 응답 실측 | `curl -s http://watchman.agent-system:8687/state | python3 -m json.tool` | 최근 run 목록·카드 요약 JSON, 합의한 필드 전부 존재. run 상태는 7값(대기·실행 중·부분 결과·완료·실패·취소·복구 필요), run 별 모델 호출 수·토큰·소요 시간 집계 포함 (SPEC FR-15) |
+| T3-1 | 응답 실측 | `curl -s http://watchman.agent-system:8687/state \| python3 -m json.tool` | 최근 run 목록·카드 요약 JSON, 합의한 필드 전부 존재. run 상태는 7값(대기·실행 중·부분 결과·완료·실패·취소·복구 필요), run 별 모델 호출 수·토큰·소요 시간 집계 포함 (SPEC FR-15) |
 | T3-2 | read-only 확인 | POST/PUT/DELETE `/state` | 405 (GET 만 허용) |
 | T3-3 | 시크릿 무누출 | 응답 전문에서 토큰·비번·`nvapi-` grep | 0건 |
 | T3-4 | 소비자 검증 | 서브에이전트2이 Unity(또는 curl 폴링 스크립트)로 10분 폴링 | 파싱 에러 0, 필드 부족하면 이슈로 회송 |

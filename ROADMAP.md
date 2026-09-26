@@ -12,7 +12,7 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
 거부·주입 픽스처까지 실측 완료 (SPEC M0·M1·M1.5 ✅). 남은 7일은 이걸
 **"제출물"로 포장 + 보안통제 마무리 + 보이게 만들기**에 쓴다.
 
-## 0.1 진행 현황 (2026-09-24 갱신)
+## 0.1 진행 현황 (2026-09-26 갱신)
 
 | 항목 | 상태 | 증거 |
 |---|---|---|
@@ -29,6 +29,9 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
 | Falco 런타임 탐지 | ✅ **실배포**(STRETCH 에서 승격) — 6노드 DaemonSet + falcosidekick → Alertmanager → watchman | helm-deploy `argocd-applications/falco.yaml` |
 | NVIDIA 안전 가드 2차 판정 | ✅ 비차단 판정만 | `eval/guard-20260924.md` |
 | NIM 과부하 대응 | ✅ 동시성 제한·백오프(90c5b53) + 모델 폴백 | `SUBMISSION.md` 정직 고지 #7 |
+| NAT(NeMo Agent Toolkit) 플러그인 | ✅ 운영 코드 경로 그대로 `nat eval`·프로파일러 | `nat_watchman/`, `eval/nat-kpi-20260925.md` |
+| 결정적 게이트 (CI) | ✅ 단위 307건 + eval 6종 exit 0 — 로컬 재현 확인(2026-09-26) | `.github/workflows/ci.yml` |
+| 문서 동기화 (SPEC/ROLE/ROADMAP) | ✅ 2026-09-26 — 소스 대조 후 drift 해소 | SPEC.md §12 갱신 이력 |
 
 ## 1. 컷라인
 
@@ -190,7 +193,12 @@ read-only 조사(ES·K8s) → NIM 분류 → 텔레그램 제안 카드. RBAC �
 - [ ] 실알림 E2E 데모 증거 (GIF 또는 감사로그+카드 스크린샷)
 - [x] 보안통제 6축 각각의 **실측 증거** (403 로그, 차단 로그, ⚠ 카드, 감사로그 발췌) — `eval/CONTROL-MATRIX.md`
 - [x] 평가 리포트 (정답률 표 + 레드팀 결과표) — REPORT·real-alerts-20260924·REDTEAM
-- [ ] SPEC.md / ROLE.md / ROADMAP.md 최신화
+- [x] SPEC.md / ROLE.md / ROADMAP.md 최신화 (2026-09-26) — 소스 대조로 확인한 drift 를 해소했다:
+      기본 등록 도구에 `container_lookup` 이 빠져 있던 것(허용목록이 이 프로젝트의 핵심 주장이라 가장 컸다),
+      §3 스텝 예산이 FR-4 와 자기모순, ES 허용목록 4개→실제 기본값 1개, 리소스 19종→21종,
+      FR-11 이 "PVC 미결" 인데 ROADMAP S2 는 ✅ 라 두 문서가 반박하던 것. 또 SPEC 에 아예 없던 구현물
+      (Falco 수신·판정 재사용·안전 가드·감사 해시 체인·이메일 이중화·내장 콘솔·NAT 플러그인·스냅샷 재생)을
+      FR-25~FR-36 으로 명세화했다. **코드 변경 없음** — 9/26 기능 동결을 지켰다.
 - [ ] (S1 성공 시) 관제 뷰 녹화 — 뷰는 있음(`web/DEMO.md` 녹화 가이드), 녹화는 사용자 담당
 - [x] Skills 생태계 실체 확인 + Watchman 을 공식 SkillEvaluator 로 검증(P7 부분완료, 7b83cc1)
 - [x] §1.1 공식 요건 확인표 완료 (P7) — 9/22 팀 브리핑으로 확정: 자유 주제, 9/28 온라인 신청서, 지정교육 수료

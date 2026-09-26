@@ -7,28 +7,32 @@ name: ci
 
 on:
   push:
-    branches: [master]
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
 jobs:
   gates:
-    # 클러스터 ARC 러너(helm-deploy arc-runners-watchman.yaml). 이 리포는 PRIVATE — 공개 스냅샷
-    # 리포(watchman-secops-agent)엔 절대 자체 호스트 러너를 쓰지 않는다(포크 PR 이 노드에서 돈다).
-    runs-on: watchman-arc
+    # GitHub 호스트 러너. 공개 스냅샷 리포(watchman-secops-agent)에는 자체 호스트 러너를 쓰지
+    # 않는다 — 포크 PR 이 클러스터 노드에서 돌기 때문이다. 게이트가 전부 stdlib-only·네트워크
+    # 없이 재현되므로 ubuntu-latest 로 충분하다(개발 리포의 ARC 러너 watchman-arc 와 동일 결과).
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: 단위 테스트 (통제 축 79건)
+      - name: 단위 테스트 (통제 축 307건)
         run: |
           python3 -m unittest test_watchman
           python3 -m unittest test_security_layers
           python3 -m unittest test_card_evidence
           python3 -m unittest test_logsrc
           python3 -m unittest test_guardrail_view
+          python3 -m unittest test_falco_split
+          python3 -m unittest test_featured
+          python3 -m unittest test_story
 
       - name: 파이프라인 계약 충족 (mock, 결정적) — 10/10 (분류 정확도 아님)
         run: python3 eval/run_eval.py
