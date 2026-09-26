@@ -1883,7 +1883,7 @@ class WriteHostAllowlist(unittest.TestCase):
             self.assertEqual(self._post(h), 400, msg=h)
 
     def test_everything_else_blocked(self):
-        for h in ("192.168.219.101:30687", "security.lemuel.co.kr", "evil.example", "", None):
+        for h in ("192.168.0.10:30687", "security.lemuel.co.kr", "evil.example", "", None):
             self.assertEqual(self._post(h), 403, msg=repr(h))
 
     def test_host_only_is_not_auth_without_token(self):
@@ -2215,13 +2215,13 @@ class SpanTrace(unittest.TestCase):
 
     def test_findings_masked_and_trace_only(self):
         f = w._public_findings({
-            "evidence": ["pod 10.42.1.7 on 192.168.219.101 mailed a@b.com", "", 7],
+            "evidence": ["pod 10.42.1.7 on 192.168.0.10 mailed a@b.com", "", 7],
             "proposals": [{"action_type": "investigate", "risk": "low",
                            "target": {"kind": "Node", "name": "david"}, "rationale": "see 172.16.0.9"},
                           {"action_type": "rm -rf /"}]})
         self.assertEqual(len(f["evidence"]), 1)
         self.assertNotIn("10.42.1.7", f["evidence"][0])
-        self.assertNotIn("192.168.219.101", f["evidence"][0])
+        self.assertNotIn("192.168.0.10", f["evidence"][0])
         self.assertNotIn("a@b.com", f["evidence"][0])
         self.assertEqual([p["action_type"] for p in f["proposals"]], ["investigate"])
         self.assertNotIn("name", f["proposals"][0])
