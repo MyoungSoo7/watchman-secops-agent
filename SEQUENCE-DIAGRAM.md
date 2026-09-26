@@ -1,6 +1,6 @@
 # SEQUENCE-DIAGRAM.md — 주요 흐름 시퀀스
 
-> 실제 구현(`watchman.py`) 기준. 깃헙이 mermaid 를 렌더한다.
+> 실제 구현(`watchman.py`) 기준, 2026-09-26 소스 대조 갱신. 깃헙이 mermaid 를 렌더한다.
 > 구성요소·통제 번호(①~⑥)는 [SPEC.md](SPEC.md) §2·§6, FR 번호는 §10.
 
 ## 1. 정상 경로 — 실알림 E2E (M0~M1.5 실측 완료)
@@ -28,16 +28,24 @@ sequenceDiagram
             W->>ES: 코드가 조립한 DSL 만 전송
             ES-->>W: 히트 (▶ data 블록 래핑, 통제⑤)
         else tool = kube_read
-            Note over W: verb{get,list,logs} × 리소스 19종<br/>화이트리스트 검증 (FR-6, 통제①)
+            Note over W: verb{get,list,logs} × 리소스 21종<br/>화이트리스트 검증 (FR-6, 통제①)
             W->>K8S: GET (RBAC 이 2차 방어, 통제②)
             K8S-->>W: 리소스 JSON (▶ data 블록 래핑)
+        else tool = container_lookup
+            Note over W: container_id 12~64 hex 정규식 검증 (FR-25)<br/>Falco 가 파드를 못 붙인 건을 되짚는다
+            W->>K8S: GET /api/v1/pods (read-only)
+            K8S-->>W: 파드 매칭 또는 "못 찾음"(그 자체가 사실)
         else tool = finish
             Note over W: 출력 스키마 검증 (FR-9)<br/>classification·evidence·proposals 구조화
+        end
+        opt 자유 텍스트(로그·알림 본문)
+            W->>NIM: 안전 가드 모델 2차 판정 (FR-29)
+            NIM-->>W: safe / unsafe — 비차단, 감사·카드 표시에만
         end
     end
 
     W->>TG: sendMessage — 분류·근거·제안 카드 (FR-10)
-    Note over W: audit.jsonl append-only 전 구간 기록 (FR-11, 통제⑥)<br/>자동 실행 없음 — 제안만
+    Note over W: audit.jsonl append-only 전 구간 기록 (FR-11, 통제⑥)<br/>줄마다 직전 줄 sha256 을 prev 로 — 변조 체인 (FR-30)<br/>같은 사건을 stdout h= 로도 흘려 ELK 에 닻<br/>자동 실행 없음 — 제안만
 ```
 
 ## 2. 인자 거부·오류 경로 (FR-7 오류 예산, 실측: arg_rejected)
@@ -81,28 +89,71 @@ sequenceDiagram
     W->>NIM: ▶ data 로 래핑된 로그 전달
     Note over NIM: 지시로 해석하지 않음 (M1 레드팀 실측)
     NIM-->>W: 정상 finish (분류·제안)
-    Note over W: 성공해도 할 수 있는 게 없음:<br/>통제① 도구 허용목록뿐(es_search·kube_read·finish) · 통제② read-only RBAC ·<br/>통제④ 이그레스 4목적지 (P1)
+    Note over W: 성공해도 할 수 있는 게 없음:<br/>통제① 도구 허용목록뿐(es_search·kube_read·container_lookup·finish) · 통제② read-only RBAC ·<br/>통제④ NetworkPolicy 이그레스 — 사설망은 목적지 고정,<br/>외부는 443 만(vanilla NetworkPolicy 는 도메인 제한 불가, FR-12)
     W->>TG: 카드 (P2 이후: 주입 패턴 감지 시 ⚠ 배지)
     Note over W: 통제⑥ 시도 전체가 감사로그에 남음
 ```
 
-## 4. 제출 프로토타입 추가 흐름 — 관제 뷰 (S1, FR-15·16)
+## 4. 관제 뷰 — 내장 콘솔이 정본 (FR-15·32, M4)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as Unity 관제 뷰<br/>(서브에이전트2)
+    participant B as 브라우저<br/>(사람)
     participant W as watchman
-    participant E as ESP32 상태등<br/>(STRETCH)
+    participant H as web/console-map.html<br/>(노드 맵 프로토, S1)
+    participant E as ESP32 상태등<br/>(STRETCH·미착수)
 
-    loop 폴링 (주기 뷰 재량)
-        U->>W: GET /state
-        W-->>U: 최근 run·카드 요약·통계 JSON (read-only)
-        Note over U: 6노드 3D 맵에 심각도 색·<br/>조사 결과 오버레이
+    B->>W: GET / 또는 /view
+    W-->>B: 의존성 0 단일 페이지 read-only 콘솔 (FR-32)
+    loop 폴링
+        B->>W: GET /state
+        W-->>B: run 목록·상태 7값·가드/주입 배지·토큰 사용량 (FR-15)
+    end
+    opt run 하나 파보기
+        B->>W: GET /trace?run=&lt;id&gt;
+        W-->>B: 그 run 의 도구 호출 타임라인
+    end
+    Note over B,W: POST /state 는 405 — GET 전용 (ROLE.md T3-2)
+    opt 별도 프로토
+        H->>W: GET /state → 6노드 맵 오버레이 (Unity 대체, web/DEMO.md)
     end
     opt STRETCH (마감 후)
-        E->>W: GET /state
-        W-->>E: 동일 JSON → LED 색 변경
+        E->>W: GET /state → LED 색 변경 (FR-17, 미착수)
     end
-    Note over U,W: 뷰는 클러스터 API·ES 를 직접 찌르지 않는다<br/>(ROLE.md 경계 계약 — 자격증명은 코어에만)
+    Note over B,W: 뷰는 클러스터 API·ES 를 직접 찌르지 않는다<br/>(ROLE.md 경계 계약 — 자격증명은 코어에만)
+```
+
+## 5. Falco 런타임 경보 경로 (FR-27·28·25, 2026-09-22~ 실배포)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant F as Falco<br/>(6노드 DaemonSet, modern_ebpf)
+    participant FS as falcosidekick
+    participant AM as Alertmanager
+    participant W as watchman
+    participant K8S as K8s API
+    participant TG as Telegram
+
+    F->>FS: 룰 히트 (output_fields)
+    FS->>AM: 경보
+    AM->>W: POST /alert
+    W-->>AM: 202 Accepted
+
+    alt 같은 소음이 창 안에 이미 조사됨
+        Note over W: 소음 키 = 룰 + 워크로드 + 실행파일/부모프로세스<br/>명령줄은 키에서 제외 (인자만 바꾼 반복 방지)<br/>단 priority ∈ {emergency,alert,critical,error} 면 묶지 않음 (FR-27)
+        W->>W: 첫 run 에 합산, 조사 생략
+    else 24h 안에 같은 소음의 '오탐' 판정이 있음
+        Note over W: 재사용 조건: 명시적 오탐 + 신뢰도 중간↑<br/>+ 파괴적 제안·high risk 없음 + 주입/가드 플래그 없음 (FR-28)
+        W->>TG: ♻️ 재사용 카드 — LLM 재조사 생략, 남은 시간 표기
+    else 새로 조사
+        opt k8s_pod_name 이 비었거나 &lt;NA&gt;
+            W->>K8S: container_lookup (FR-25)
+            K8S-->>W: 파드 / 또는 "kubelet 밖 컨테이너·dind 중첩·이미 삭제"
+        end
+        Note over W: 이후는 §1 정상 경로와 동일<br/>(도구 루프 → finish → 카드)
+        W->>TG: 판정 카드
+    end
+    Note over W,TG: 전 과정 감사로그. 자동 격리·자동 실행 없음 — 제안만
 ```

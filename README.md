@@ -1,5 +1,9 @@
 # Watchman(파수꾼)
 
+[![ci](https://github.com/MyoungSoo7/watchman-secops-agent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MyoungSoo7/watchman-secops-agent/actions/workflows/ci.yml)
+
+> 배지는 **결정적 게이트만** 돈다 — 단위 테스트 307건 + 평가 하네스 6종(파이프라인 계약·레드팀 감지·유출 통제·킬체인·복구가능성·인바리언트) + 대표 알림 mock 완주. 전부 stdlib-only·네트워크 없이 재현되며, 외부 자격증명(NVIDIA·ES·K8s)이 필요한 경로는 CI 에 넣지 않았다.
+
 > **심사용 공개 스냅샷.** 개발 리포(비공개)의 `8a709bc` 시점(2026-09-26)을 히스토리 없이 옮긴 사본이다.
 > 변경점: 개인 이메일 마스킹, 내부 문서 2개(`request.md` 제출 초안·`docs/PRICING-DRAFT.md` 가격 초안) 제외. 코드·테스트·평가 하네스는 원본과 동일.
 
